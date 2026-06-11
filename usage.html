@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>uv の基本操作と概念 - 社内 uv 利用ガイド</title>
+  <link rel="stylesheet" href="assets/css/technical-doc.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+</head>
+<body>
+  <div class="layout">
+    
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <p class="sidebar-title">社内 uv 利用ガイド</p>
+        <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順案</p>
+      </div>
+      <details class="nav-section" open>
+        <summary>Contents</summary>
+        <div class="nav-body">
+          <ol id="auto-toc" class="toc-tree">Loading TOC from elements marked with data-toc...</ol>
+        </div>
+      </details>
+      <details class="nav-section" open>
+        <summary>Pages</summary>
+        <div class="nav-body">
+          <ol class="nav-list">
+            <li><a href="index.html">概要</a></li>
+<li><a href="install.html">インストール</a></li>
+<li><a href="setup.html">社内ネットワーク設定</a></li>
+<li><a href="usage.html" aria-current="page">基本操作と概念</a></li>
+<li><a href="migration.html">Poetry + pyenv からの移行</a></li>
+<li><a href="security.html">セキュリティ運用</a></li>
+          </ol>
+        </div>
+      </details>
+      <details class="nav-section" open>
+        <summary>References</summary>
+        <div class="nav-body">
+          <ol class="nav-list">
+            <li><a href="https://docs.astral.sh/uv/" target="_blank" rel="noreferrer">uv 公式ドキュメント</a></li>
+            <li><a href="https://github.com/tyaso777/html-doc-template" target="_blank" rel="noreferrer">html-doc-template</a></li>
+          </ol>
+        </div>
+      </details>
+    </aside>
+    <main class="content">
+      <header class="hero">
+        <h1>uv の基本操作と概念</h1>
+        <p>現状の <code>pyenv + Poetry</code> 構成から、uv を社内標準として使うための導入・移行・運用手順を整理します。</p>
+      </header>
+      <section class="document-info" aria-labelledby="document-info-title">
+        <h2 id="document-info-title">Document Information</h2>
+        <dl class="metadata">
+          <div><dt>Version</dt><dd>0.2.0</dd></div>
+          <div><dt>Last updated</dt><dd>2026-06-11</dd></div>
+          <div><dt>Template</dt><dd>tyaso777/html-doc-template</dd></div>
+        </dl>
+      </section>
+      
+      <section id="core-concepts" data-toc data-toc-title="主要概念">
+        <h2>主要概念</h2>
+        <div class="table-wrap"><table><thead><tr><th>概念</th><th>説明</th></tr></thead><tbody><tr><td><code>pyproject.toml</code></td><td>プロジェクトのメタデータ、依存関係、ツール設定を置く標準ファイル。</td></tr>
+<tr><td><code>uv.lock</code></td><td>解決済み依存関係を固定する lock file。</td></tr>
+<tr><td><code>.python-version</code></td><td>プロジェクトで使う Python バージョンを指定するファイル。</td></tr>
+<tr><td><code>.venv</code></td><td>プロジェクトローカルの仮想環境。</td></tr>
+<tr><td><code>uv run</code></td><td>必要に応じて環境を同期し、仮想環境内でコマンドを実行する。</td></tr></tbody></table></div>
+      </section>
+      <section id="new-project" data-toc data-toc-title="新規プロジェクト">
+        <h2>新規プロジェクト</h2>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv init my-app
+cd my-app
+uv python pin 3.12
+uv add requests
+uv run python -c "import requests; print(requests.__version__)"</code></pre>
+      </section>
+      <section id="dependencies" data-toc data-toc-title="依存関係の追加と削除">
+        <h2>依存関係の追加と削除</h2>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv add pandas
+uv add "fastapi[standard]"
+uv add --dev pytest ruff
+uv remove pandas
+uv lock</code></pre>
+      </section>
+      <section id="pyproject-dependency-notation" data-toc data-toc-title="pyproject.toml のライブラリ記法">
+        <h2>pyproject.toml のライブラリ記法</h2>
+        <p>uv の依存管理では、<code>uv add</code> で指定した内容が <code>pyproject.toml</code> に記録され、解決結果が <code>uv.lock</code> に固定されます。レビュー時は、lock file だけでなく <code>pyproject.toml</code> にどのような制約が入ったかを確認します。</p>
+        <p>基本は PEP 508 の dependency specifier です。ライブラリ名、バージョン制約、extras、環境マーカーを 1 つの文字列として書きます。</p>
+        <div class="code-caption">toml</div>
+<pre class="code-block language-toml"><code class="language-toml">[project]
+name = "my-app"
+version = "0.1.0"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "pandas>=2.2,<3",
+    "requests>=2.32",
+    "fastapi[standard]>=0.115",
+    "pywin32>=306; sys_platform == \"win32\"",
+]</code></pre>
+        <aside class="callout callout-warning">手で <code>pyproject.toml</code> を編集することもできますが、通常は <code>uv add</code> を使います。<code>uv add</code> は依存定義と lock file の更新を同時に行うため、記法ミスや lock file の更新漏れを減らせます。</aside>
+      </section>
+      <section id="version-specifiers" data-toc data-toc-title="バージョン制約の書き方">
+        <h2>バージョン制約の書き方</h2>
+        <div class="table-wrap"><table><thead><tr><th>指定</th><th>例</th><th>使いどころ</th></tr></thead><tbody><tr><td>下限のみ</td><td><code>pandas&gt;=2.2</code></td><td>基本形。新しい互換版を許容する。</td></tr>
+<tr><td>範囲指定</td><td><code>pandas&gt;=2.2,&lt;3</code></td><td>メジャーバージョンをまたぐ破壊的変更を避けたい場合。</td></tr>
+<tr><td>完全固定</td><td><code>pandas==2.2.3</code></td><td>一時的な回避策や再現性が強く必要な場合。通常は lock file 固定を優先する。</td></tr>
+<tr><td>除外</td><td><code>pandas!=2.2.2</code></td><td>特定バージョンに既知不具合がある場合。</td></tr>
+<tr><td>互換リリース</td><td><code>pandas~=2.2</code></td><td>PEP 440 の互換リリース指定。チームで意味を統一してから使う。</td></tr></tbody></table></div>
+        <p>社内標準としては、アプリケーションでは <code>&gt;=下限,&lt;次のメジャー</code> を基本にし、実際に使う正確なバージョンは <code>uv.lock</code> で固定する方針が扱いやすいです。</p>
+      </section>
+      <section id="poetry-caret-notation" data-toc data-toc-title="Poetry の ^ 記法との対応">
+        <h2>Poetry の ^ 記法との対応</h2>
+        <p>Poetry では <code>^2.2</code> のような caret requirement をよく使います。これは Poetry 独自の便利な記法で、Python 標準の PEP 508 文字列として <code>[project].dependencies</code> にそのまま書くものではありません。uv 管理へ移行する場合は、意味が分かる範囲指定へ展開して書きます。</p>
+        <div class="table-wrap"><table><thead><tr><th>Poetry 記法</th><th>展開後の例</th><th>意味</th></tr></thead><tbody><tr><td><code>^2.2</code></td><td><code>&gt;=2.2,&lt;3</code></td><td>2.x 系を許容し、3.0.0 以上は避ける。</td></tr>
+<tr><td><code>^2.2.3</code></td><td><code>&gt;=2.2.3,&lt;3</code></td><td>2.2.3 以上の 2.x 系を許容する。</td></tr>
+<tr><td><code>^0.5.1</code></td><td><code>&gt;=0.5.1,&lt;0.6</code></td><td>0.x 系では互換範囲が狭くなる点に注意する。</td></tr>
+<tr><td><code>^0.0.3</code></td><td><code>&gt;=0.0.3,&lt;0.0.4</code></td><td>0.0.x では patch 範囲だけを許容する。</td></tr>
+<tr><td><code>^1.0.0</code></td><td><code>&gt;=1.0.0,&lt;2</code></td><td>1.x 系を許容する。</td></tr></tbody></table></div>
+        <aside class="callout callout-warning"><code>~=2.2</code> は PEP 440 の compatible release 指定ですが、Poetry の <code>^</code> と常に同じ意味ではありません。社内標準では、移行時に <code>^</code> を機械的に <code>~=</code> へ置き換えず、<code>&gt;=下限,&lt;上限</code> の形で明示します。</aside>
+      </section>
+      <section id="uv-add-notation" data-toc data-toc-title="uv add での指定方法">
+        <h2>uv add での指定方法</h2>
+        <p><code>uv add</code> でも、基本的には <code>pyproject.toml</code> に入る文字列と同じ指定を使います。PowerShell では <code>&lt;</code>、<code>&gt;</code>、<code>;</code>、extras を含む指定が解釈されないよう、依存指定全体を引用符で囲みます。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv add "pandas>=2.2,<3"
+uv add "requests>=2.32"
+uv add "fastapi[standard]>=0.115"
+uv add "pywin32>=306; sys_platform == \"win32\""
+uv add --dev "pytest>=8" ruff
+uv add --optional notebook "jupyterlab>=4"</code></pre>
+        <p>上記の結果、runtime dependency は <code>[project].dependencies</code> に、開発用依存は <code>[dependency-groups].dev</code> に、optional dependency は <code>[project.optional-dependencies]</code> に入ります。</p>
+        <div class="code-caption">toml</div>
+<pre class="code-block language-toml"><code class="language-toml">[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff",
+]
+
+[project.optional-dependencies]
+notebook = [
+    "jupyterlab>=4",
+]</code></pre>
+      </section>
+      <section id="extras-markers-sources" data-toc data-toc-title="extras・markers・特殊な依存">
+        <h2>extras・markers・特殊な依存</h2>
+        <h3 id="extras" data-toc data-toc-level="3" data-toc-title="extras">extras</h3>
+        <p>extras は、パッケージが提供する追加依存をまとめて入れる指定です。例: <code>fastapi[standard]</code>、<code>requests[socks]</code>。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv add "fastapi[standard]>=0.115"</code></pre>
+        <h3 id="environment-markers" data-toc data-toc-level="3" data-toc-title="environment markers">environment markers</h3>
+        <p>OS や Python バージョンで依存を分ける場合は environment marker を使います。</p>
+        <div class="code-caption">toml</div>
+<pre class="code-block language-toml"><code class="language-toml">dependencies = [
+    "pywin32>=306; sys_platform == \"win32\"",
+    "tomli>=2; python_version < \"3.11\"",
+]</code></pre>
+        <h3 id="direct-url-git-path" data-toc data-toc-level="3" data-toc-title="direct URL / Git / path">direct URL / Git / path</h3>
+        <p>通常の社内開発では package index からの依存を優先します。Git、URL、path 依存は再現性、認証、監査、ライセンス確認が難しくなるため、必要な場合だけ使います。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv add "my-package @ git+https://github.com/example/my-package.git@v1.2.3"
+uv add "my-lib @ file:///${PWD}/libs/my-lib"</code></pre>
+        <aside class="callout callout-warning">Git や path 依存を使う場合は、参照先、タグまたは commit、認証方式、CI で取得できることを必ず確認します。社内標準では private package repository へ配布してから通常依存として追加する方がレビューしやすいです。</aside>
+      </section>
+      <section id="python-management" data-toc data-toc-title="Python の管理">
+        <h2>Python の管理</h2>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv python list
+uv python install 3.12
+uv python pin 3.12
+uv run python --version</code></pre>
+        <aside class="callout callout-warning">uv は通常、管理対象 Python として python-build-standalone の配布物を利用します。pyenv のように任意の全バージョンをソースビルドできる前提ではありません。</aside>
+      </section>
+
+      <nav class="chapter-nav" aria-label="ページ移動"><a class="chapter-nav-link" href="setup.html"><span>Previous</span><strong>社内ネットワーク設定</strong></a>
+<a class="chapter-nav-link next" href="migration.html"><span>Next</span><strong>Poetry + pyenv からの移行</strong></a></nav>
+      <footer class="footer">この文書は html-doc-template の CSS / JS / data-toc 構造に合わせたドラフトです。</footer>
+      
+      <div class="visually-hidden" aria-hidden="true">
+        <textarea id="python-code"></textarea>
+        <button id="load-button" type="button">Load Python Runtime</button>
+        <button id="run-button" type="button">Run Python</button>
+        <button id="reset-button" type="button">Reset Code</button>
+        <button id="restart-runtime-button" type="button">Restart Python Runtime</button>
+        <pre id="output"></pre>
+        <span id="pyodide-status"></span>
+      </div>
+    </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-powershell.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-toml.min.js"></script>
+  <script src="assets/js/technical-doc.js"></script>
+</body>
+</html>
