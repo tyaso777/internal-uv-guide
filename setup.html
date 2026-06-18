@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>proxy・SSL・依存解決の安定化 - 社内 uv 利用ガイド</title>
+  <title>uv のネットワーク設定の基本 - 社内 uv 利用ガイド</title>
   <link rel="stylesheet" href="assets/css/technical-doc.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
 </head>
@@ -11,26 +11,175 @@
   <div class="layout">
     
     <aside class="sidebar">
-      <div class="sidebar-header">
-        <p class="sidebar-title">社内 uv 利用ガイド</p>
-        <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順案</p>
-      </div>
+      <header class="sidebar-header" aria-labelledby="sidebar-title">
+        <h2 id="sidebar-title" class="sidebar-title">社内 uv 利用ガイド</h2>
+        <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順</p>
+      </header>
       <details class="nav-section" open>
         <summary>Contents</summary>
         <div class="nav-body">
-          <ol id="auto-toc" class="toc-tree">Loading TOC from elements marked with data-toc...</ol>
-        </div>
-      </details>
-      <details class="nav-section" open>
-        <summary>Pages</summary>
-        <div class="nav-body">
-          <ol class="nav-list">
-            <li><a href="index.html">概要</a></li>
-<li><a href="install.html">インストール</a></li>
-<li><a href="setup.html" aria-current="page">社内ネットワーク設定</a></li>
-<li><a href="usage.html">基本操作と概念</a></li>
-<li><a href="migration.html">Poetry + pyenv からの移行</a></li>
-<li><a href="security.html">セキュリティ運用</a></li>
+          <ol class="nav-list site-contents-tree">
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="index.html">概要</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="index.html#purpose">1. 目的</a>
+                  </li>
+                  <li><a href="index.html#target-readers">2. 対象読者</a>
+                  </li>
+                  <li><a href="index.html#guide-map">3. ガイド構成</a>
+                  </li>
+                  <li><a href="index.html#operational-assumptions">4. 運用上の前提</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="install.html">インストール</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="install.html#prerequisites">1. proxy 設定を確認する</a>
+                  </li>
+                  <li><a href="install.html#proxy-settings">2. proxy を設定する</a>
+                  </li>
+                  <li><a href="install.html#versioned-install">3. uv のバージョンを指定してインストールする</a>
+                  </li>
+                  <li><a href="install.html#verify-install">4. インストール確認</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details open>
+                <summary><a href="setup.html" aria-current="page">ネットワーク設定の基本</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="setup.html#proxy-check">1. proxy の確認</a>
+                  </li>
+                  <li><a href="setup.html#setting-scope">2. 設定の有効範囲</a>
+                  </li>
+                  <li><a href="setup.html#proxy-env-vars">3. proxy 環境変数</a>
+                  </li>
+                  <li><a href="setup.html#system-certs">4. 社内 CA / SSL inspection</a>
+                  </li>
+                  <li><a href="setup.html#private-index">5. private package repository</a>
+                  </li>
+                  <li><a href="setup.html#exclude-newer">6. 新しすぎるリリースを避ける</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="usage.html">基本操作と概念</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="usage.html#core-concepts">1. 主要概念</a>
+                  </li>
+                  <li><a href="usage.html#new-project">2. 新規プロジェクト</a>
+                  </li>
+                  <li><a href="usage.html#dependencies">3. 依存関係の追加と削除</a>
+                  </li>
+                  <li><a href="usage.html#pyproject-dependency-notation">4. pyproject.toml のライブラリ記法</a>
+                  </li>
+                  <li><a href="usage.html#version-specifiers">5. バージョン制約の書き方</a>
+                  </li>
+                  <li><a href="usage.html#poetry-caret-notation">6. Poetry の ^ 記法との対応</a>
+                  </li>
+                  <li><a href="usage.html#uv-add-notation">7. uv add での指定方法</a>
+                  </li>
+                  <li><a href="usage.html#project-environment-location">8. 仮想環境を C ドライブ内に分離する</a>
+                  </li>
+                  <li><a href="usage.html#extras-markers-sources">9. extras・markers・特殊な依存</a>
+                    <ol>
+                      <li><a href="usage.html#extras">9.1 extras</a></li>
+                      <li><a href="usage.html#environment-markers">9.2 environment markers</a></li>
+                      <li><a href="usage.html#direct-url-git-path">9.3 direct URL / Git / path</a></li>
+                    </ol>
+                  </li>
+                  <li><a href="usage.html#python-management">10. Python の管理</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="start-project.html">プロジェクトの始め方</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="start-project.html#prerequisites">1. 前提を確認する</a>
+                  </li>
+                  <li><a href="start-project.html#network-session-settings">2. ネットワーク設定を適用する</a>
+                  </li>
+                  <li><a href="start-project.html#create-project">3. プロジェクトを作成する</a>
+                  </li>
+                  <li><a href="start-project.html#add-dependencies">4. 依存関係を追加する</a>
+                  </li>
+                  <li><a href="start-project.html#first-run">5. 初回実行する</a>
+                  </li>
+                  <li><a href="start-project.html#commit-targets">6. コミット対象を確認する</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="copy-existing-project.html#copy-or-clone">1. プロジェクトを取得する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#network-session-settings">2. ネットワーク設定を適用する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#check-python-version">3. Python バージョン指定を確認する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#sync-environment">4. 環境を同期する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#verify-project">5. 動作確認する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#lock-file-policy">6. lock file 更新の扱い</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="migration.html">Poetry + pyenv からの移行</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="migration.html#migration-goal">1. 移行のゴール</a>
+                  </li>
+                  <li><a href="migration.html#command-mapping">2. コマンド対応表</a>
+                  </li>
+                  <li><a href="migration.html#pre-migration-inventory">3. 事前調査</a>
+                  </li>
+                  <li><a href="migration.html#migration-policy">4. 移行方針を決める</a>
+                  </li>
+                  <li><a href="migration.html#local-migration">5. ローカルで移行する</a>
+                  </li>
+                  <li><a href="migration.html#pyproject-adjustments">6. pyproject.toml を調整する</a>
+                  </li>
+                  <li><a href="migration.html#verification">7. 動作確認する</a>
+                  </li>
+                  <li><a href="migration.html#ci-and-docker">8. CI / Docker を更新する</a>
+                  </li>
+                  <li><a href="migration.html#cleanup">9. Poetry / pyenv 前提を整理する</a>
+                  </li>
+                  <li><a href="migration.html#review-checklist">10. レビュー観点</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="security.html">セキュリティ運用</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="security.html#minimum-checks">1. 最低限入れるチェック</a>
+                  </li>
+                  <li><a href="security.html#pip-audit">2. pip-audit</a>
+                  </li>
+                  <li><a href="security.html#pip-licenses">3. pip-licenses</a>
+                  </li>
+                  <li><a href="security.html#dependency-review">4. 依存追加時のレビュー観点</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
           </ol>
         </div>
       </details>
@@ -46,56 +195,137 @@
     </aside>
     <main class="content">
       <header class="hero">
-        <h1>proxy・SSL・依存解決の安定化</h1>
-        <p>現状の <code>pyenv + Poetry</code> 構成から、uv を社内標準として使うための導入・移行・運用手順を整理します。</p>
+        <h1>uv のネットワーク設定の基本</h1>
+        <p>社内 proxy、証明書、private package repository など、uv のネットワーク設定の考え方を整理します。</p>
       </header>
-      <section class="document-info" aria-labelledby="document-info-title">
-        <h2 id="document-info-title">Document Information</h2>
-        <dl class="metadata">
-          <div><dt>Version</dt><dd>0.2.0</dd></div>
-          <div><dt>Last updated</dt><dd>2026-06-11</dd></div>
-          <div><dt>Template</dt><dd>tyaso777/html-doc-template</dd></div>
-        </dl>
-      </section>
-      
-      <section id="proxy-check" data-toc data-toc-title="proxy の確認">
-        <h2>proxy の確認</h2>
-        <div class="code-caption">powershell</div>
-<pre class="code-block language-powershell"><code class="language-powershell">netsh winhttp show proxy
 
+      <section class="chapter-intro" aria-label="このページの目的">
+        <h2>ページ概要</h2>
+        <p>このページの目的は、社内ネットワーク配下で uv を安定して利用するために必要な環境変数と設定の考え方を整理することです。社内 proxy、SSL inspection、社内 CA、private package repository を利用する環境を前提に、<code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code> などの設定方法を説明します。</p>
+        <p>実際の作業手順は、<a href="start-project.html">プロジェクトの始め方</a> と <a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a> で改めて記載します。このページでは、各設定が何のためのものか、どこに保存されるか、どの範囲に効くかを押さえます。</p>
+      </section>
+      <section id="proxy-check" data-toc data-toc-title="proxy の確認">
+        <h2>1. proxy の確認</h2>
+        <p>Windows 端末で OS 側に設定されている WinHTTP proxy を確認します。このコマンドは設定を変更せず、現在の端末設定を表示するだけです。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">netsh winhttp show proxy</code></pre>
+      </section>
+      <section id="setting-scope" data-toc data-toc-title="設定の有効範囲">
+        <h2>2. 設定の有効範囲</h2>
+        <p>uv に渡す設定は、どこに保存するかで有効範囲が変わります。トラブル時に原因を追えるよう、手順書やセットアップスクリプトでは「このセッションだけ」なのか「永続設定」なのかを明示します。</p>
+        <p>設定方法には、PowerShell でコマンドとして実行するものと、設定ファイルに記載するものがあります。下表では、設定方法欄の先頭にどちらの操作かを示します。</p>
+        <div class="table-wrap"><table>
+          <thead>
+            <tr>
+              <th style="width: 12rem;">設定方法</th>
+              <th>有効範囲</th>
+              <th>保存場所</th>
+              <th>確認方法</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PowerShell で一時設定</strong><br><code>$env:<wbr>NAME="VALUE"</code></td>
+              <td>現在の PowerShell セッションのみ</td>
+              <td>現在のプロセス環境。PowerShell を閉じると消える。</td>
+              <td><code>echo $env:<wbr>NAME</code></td>
+            </tr>
+            <tr>
+              <td><strong>PowerShell で永続設定</strong><br><code>[Environment]::<wbr>SetEnvironmentVariable("NAME", "VALUE", "User")</code></td>
+              <td>現在の Windows ユーザーで永続</td>
+              <td>Windows のユーザー環境変数。新しく開いた PowerShell から反映される。</td>
+              <td><code>[Environment]::<wbr>GetEnvironmentVariable("NAME", "User")</code></td>
+            </tr>
+            <tr>
+              <td><strong>プロジェクト設定ファイルに記載</strong><br><code>pyproject.toml</code> の <code>[tool.uv]</code></td>
+              <td>そのプロジェクト配下</td>
+              <td>プロジェクトの <code>pyproject.toml</code></td>
+              <td>ファイルをレビューする</td>
+            </tr>
+            <tr>
+              <td><strong>uv 設定ファイルに記載</strong><br><code>uv.toml</code></td>
+              <td>配置場所に応じてプロジェクト / ユーザー / システム</td>
+              <td>プロジェクトの <code>uv.toml</code>、または Windows では <code>%APPDATA%&#92;<wbr>uv&#92;<wbr>uv.toml</code></td>
+              <td>ファイルをレビューする</td>
+            </tr>
+          </tbody>
+        </table></div>
+        <aside class="callout callout-info">同じ設定が複数箇所にある場合、コマンドライン引数、環境変数、永続設定ファイルの順に優先されます。検証時は一時的な <code>$env:</code> 設定が残っていないか確認します。</aside>
+      </section>
+      <section id="proxy-env-vars" data-toc data-toc-title="proxy 環境変数">
+        <h2>3. proxy 環境変数</h2>
+        <p>この PowerShell セッションだけで試す場合は、<code>$env:HTTP_PROXY</code> と <code>$env:HTTPS_PROXY</code> を設定します。値は PowerShell を閉じると消えます。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell"># proxy をこの PowerShell セッションに設定する
 $env:HTTP_PROXY="http://proxy.example.co.jp:8080"
-$env:HTTPS_PROXY="http://proxy.example.co.jp:8080"</code></pre>
+$env:HTTPS_PROXY="http://proxy.example.co.jp:8080"
+
+# 設定された proxy を確認する
+echo $env:HTTP_PROXY
+echo $env:HTTPS_PROXY</code></pre>
+        <p>次回以降の PowerShell でも使う場合は、Windows のユーザー環境変数として保存します。保存後、既に開いている PowerShell には自動反映されないため、新しい PowerShell を開いて確認します。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell"># proxy を Windows のユーザー環境変数として保存する
+[Environment]::SetEnvironmentVariable("HTTP_PROXY", "http://proxy.example.co.jp:8080", "User")
+[Environment]::SetEnvironmentVariable("HTTPS_PROXY", "http://proxy.example.co.jp:8080", "User")
+
+# 新しい PowerShell を開き、保存された proxy が反映されていることを確認する
+echo $env:HTTP_PROXY
+echo $env:HTTPS_PROXY</code></pre>
       </section>
       <section id="system-certs" data-toc data-toc-title="社内 CA / SSL inspection">
-        <h2>社内 CA / SSL inspection</h2>
-        <p>社内 proxy が TLS 通信を検査している場合、OS の証明書ストアに入っている社内ルート CA を uv に利用させます。</p>
+        <h2>4. 社内 CA / SSL inspection</h2>
+        <p>社内 proxy が TLS 通信を検査している場合、OS の証明書ストアに入っている社内ルート CA を uv に利用させます。まずは現在の PowerShell セッションだけで有効化して、通信できるか確認します。</p>
         <div class="code-caption">powershell</div>
-<pre class="code-block language-powershell"><code class="language-powershell">$env:UV_SYSTEM_CERTS="1"</code></pre>
+<pre class="code-block language-powershell"><code class="language-powershell"># OS の証明書ストアをこの PowerShell セッションで利用する
+$env:UV_SYSTEM_CERTS="1"
+
+# 設定された値を確認する
+echo $env:UV_SYSTEM_CERTS</code></pre>
+        <p>継続して必要な端末では、Windows のユーザー環境変数として永続化します。保存場所は Windows のユーザー環境変数です。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell"># OS の証明書ストアを使う設定を Windows のユーザー環境変数として保存する
+[Environment]::SetEnvironmentVariable("UV_SYSTEM_CERTS", "1", "User")
+
+# 新しい PowerShell を開き、保存された値が反映されていることを確認する
+echo $env:UV_SYSTEM_CERTS</code></pre>
       </section>
       <section id="private-index" data-toc data-toc-title="private package repository">
-        <h2>private package repository</h2>
+        <h2>5. private package repository</h2>
+        <p>private package repository は、社内で作成した Python パッケージや、社内でミラーした外部パッケージを配布するためのパッケージ置き場です。PyPI ではなく社内の package index から取得する必要があるプロジェクトで使います。</p>
+        <p>すべてのプロジェクトで設定するものではありません。公開 PyPI から依存パッケージを取得できるプロジェクトや、社内 private package を使わないプロジェクトでは、この設定は不要です。</p>
+        <p>private package repository をプロジェクトごとに固定する場合は、プロジェクトの <code>pyproject.toml</code> に保存します。この設定はリポジトリに含まれるため、レビューと履歴管理の対象になります。</p>
         <div class="code-caption">toml</div>
 <pre class="code-block language-toml"><code class="language-toml">[[tool.uv.index]]
 name = "internal"
 url = "https://packages.example.co.jp/simple"
 default = true</code></pre>
+        <p>端末全体の既定値として保存する場合は、Windows では <code>%APPDATA%\uv\uv.toml</code> を使います。ユーザー設定に入れると、複数プロジェクトへ影響するため、社内標準として配布する設定だけにします。</p>
+        <div class="code-caption">toml</div>
+<pre class="code-block language-toml"><code class="language-toml">[[index]]
+name = "internal"
+url = "https://packages.example.co.jp/simple"
+default = true</code></pre>
       </section>
       <section id="exclude-newer" data-toc data-toc-title="新しすぎるリリースを避ける">
-        <h2>新しすぎるリリースを避ける</h2>
+        <h2>6. 新しすぎるリリースを避ける</h2>
         <p>依存パッケージの公開直後は、破損した wheel、差し戻し、悪意あるパッケージ混入、社内 mirror への反映遅延が起きる可能性があります。</p>
         <div class="code-caption">powershell</div>
-<pre class="code-block language-powershell"><code class="language-powershell">uv lock --exclude-newer "7 days"
+<pre class="code-block language-powershell"><code class="language-powershell"># コマンド実行時に、直近 7 日以内に公開された依存パッケージを避ける
+uv lock --exclude-newer "7 days"
 uv sync --exclude-newer "7 days"
 
+# この PowerShell セッションの既定値として設定する
 $env:UV_EXCLUDE_NEWER="7 days"
+
+# 設定された値で lock / sync を実行する
 uv lock
 uv sync</code></pre>
-        <aside class="callout callout-success">社内標準として「実行日時から X 日前より後にアップロードされた依存パッケージは使わない」と決めます。例として X=7 の場合は <code>--exclude-newer "7 days"</code> を使います。</aside>
+        <p><code>X=7</code> とする場合は、<code>--exclude-newer "7 days"</code> または <code>UV_EXCLUDE_NEWER="7 days"</code> を指定します。<code>$env:UV_EXCLUDE_NEWER</code> は現在の PowerShell セッションだけに効きます。永続化する場合はユーザー環境変数として保存できますが、lock file 更新の意図が見えにくくなるため、社内標準ではコマンドライン引数またはCIスクリプトで明示します。</p>
       </section>
-
       <nav class="chapter-nav" aria-label="ページ移動"><a class="chapter-nav-link" href="install.html"><span>Previous</span><strong>インストール</strong></a>
 <a class="chapter-nav-link next" href="usage.html"><span>Next</span><strong>基本操作と概念</strong></a></nav>
-      <footer class="footer">この文書は html-doc-template の CSS / JS / data-toc 構造に合わせたドラフトです。</footer>
+      <footer class="footer">最終更新: 2026-06-18</footer>
       
       <div class="visually-hidden" aria-hidden="true">
         <textarea id="python-code"></textarea>

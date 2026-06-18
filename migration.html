@@ -11,26 +11,175 @@
   <div class="layout">
     
     <aside class="sidebar">
-      <div class="sidebar-header">
-        <p class="sidebar-title">社内 uv 利用ガイド</p>
-        <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順案</p>
-      </div>
+      <header class="sidebar-header" aria-labelledby="sidebar-title">
+        <h2 id="sidebar-title" class="sidebar-title">社内 uv 利用ガイド</h2>
+        <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順</p>
+      </header>
       <details class="nav-section" open>
         <summary>Contents</summary>
         <div class="nav-body">
-          <ol id="auto-toc" class="toc-tree">Loading TOC from elements marked with data-toc...</ol>
-        </div>
-      </details>
-      <details class="nav-section" open>
-        <summary>Pages</summary>
-        <div class="nav-body">
-          <ol class="nav-list">
-            <li><a href="index.html">概要</a></li>
-<li><a href="install.html">インストール</a></li>
-<li><a href="setup.html">社内ネットワーク設定</a></li>
-<li><a href="usage.html">基本操作と概念</a></li>
-<li><a href="migration.html" aria-current="page">Poetry + pyenv からの移行</a></li>
-<li><a href="security.html">セキュリティ運用</a></li>
+          <ol class="nav-list site-contents-tree">
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="index.html">概要</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="index.html#purpose">1. 目的</a>
+                  </li>
+                  <li><a href="index.html#target-readers">2. 対象読者</a>
+                  </li>
+                  <li><a href="index.html#guide-map">3. ガイド構成</a>
+                  </li>
+                  <li><a href="index.html#operational-assumptions">4. 運用上の前提</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="install.html">インストール</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="install.html#prerequisites">1. proxy 設定を確認する</a>
+                  </li>
+                  <li><a href="install.html#proxy-settings">2. proxy を設定する</a>
+                  </li>
+                  <li><a href="install.html#versioned-install">3. uv のバージョンを指定してインストールする</a>
+                  </li>
+                  <li><a href="install.html#verify-install">4. インストール確認</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="setup.html">ネットワーク設定の基本</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="setup.html#proxy-check">1. proxy の確認</a>
+                  </li>
+                  <li><a href="setup.html#setting-scope">2. 設定の有効範囲</a>
+                  </li>
+                  <li><a href="setup.html#proxy-env-vars">3. proxy 環境変数</a>
+                  </li>
+                  <li><a href="setup.html#system-certs">4. 社内 CA / SSL inspection</a>
+                  </li>
+                  <li><a href="setup.html#private-index">5. private package repository</a>
+                  </li>
+                  <li><a href="setup.html#exclude-newer">6. 新しすぎるリリースを避ける</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="usage.html">基本操作と概念</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="usage.html#core-concepts">1. 主要概念</a>
+                  </li>
+                  <li><a href="usage.html#new-project">2. 新規プロジェクト</a>
+                  </li>
+                  <li><a href="usage.html#dependencies">3. 依存関係の追加と削除</a>
+                  </li>
+                  <li><a href="usage.html#pyproject-dependency-notation">4. pyproject.toml のライブラリ記法</a>
+                  </li>
+                  <li><a href="usage.html#version-specifiers">5. バージョン制約の書き方</a>
+                  </li>
+                  <li><a href="usage.html#poetry-caret-notation">6. Poetry の ^ 記法との対応</a>
+                  </li>
+                  <li><a href="usage.html#uv-add-notation">7. uv add での指定方法</a>
+                  </li>
+                  <li><a href="usage.html#project-environment-location">8. 仮想環境を C ドライブ内に分離する</a>
+                  </li>
+                  <li><a href="usage.html#extras-markers-sources">9. extras・markers・特殊な依存</a>
+                    <ol>
+                      <li><a href="usage.html#extras">9.1 extras</a></li>
+                      <li><a href="usage.html#environment-markers">9.2 environment markers</a></li>
+                      <li><a href="usage.html#direct-url-git-path">9.3 direct URL / Git / path</a></li>
+                    </ol>
+                  </li>
+                  <li><a href="usage.html#python-management">10. Python の管理</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="start-project.html">プロジェクトの始め方</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="start-project.html#prerequisites">1. 前提を確認する</a>
+                  </li>
+                  <li><a href="start-project.html#network-session-settings">2. ネットワーク設定を適用する</a>
+                  </li>
+                  <li><a href="start-project.html#create-project">3. プロジェクトを作成する</a>
+                  </li>
+                  <li><a href="start-project.html#add-dependencies">4. 依存関係を追加する</a>
+                  </li>
+                  <li><a href="start-project.html#first-run">5. 初回実行する</a>
+                  </li>
+                  <li><a href="start-project.html#commit-targets">6. コミット対象を確認する</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="copy-existing-project.html#copy-or-clone">1. プロジェクトを取得する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#network-session-settings">2. ネットワーク設定を適用する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#check-python-version">3. Python バージョン指定を確認する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#sync-environment">4. 環境を同期する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#verify-project">5. 動作確認する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#lock-file-policy">6. lock file 更新の扱い</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details open>
+                <summary><a href="migration.html" aria-current="page">Poetry + pyenv からの移行</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="migration.html#migration-goal">1. 移行のゴール</a>
+                  </li>
+                  <li><a href="migration.html#command-mapping">2. コマンド対応表</a>
+                  </li>
+                  <li><a href="migration.html#pre-migration-inventory">3. 事前調査</a>
+                  </li>
+                  <li><a href="migration.html#migration-policy">4. 移行方針を決める</a>
+                  </li>
+                  <li><a href="migration.html#local-migration">5. ローカルで移行する</a>
+                  </li>
+                  <li><a href="migration.html#pyproject-adjustments">6. pyproject.toml を調整する</a>
+                  </li>
+                  <li><a href="migration.html#verification">7. 動作確認する</a>
+                  </li>
+                  <li><a href="migration.html#ci-and-docker">8. CI / Docker を更新する</a>
+                  </li>
+                  <li><a href="migration.html#cleanup">9. Poetry / pyenv 前提を整理する</a>
+                  </li>
+                  <li><a href="migration.html#review-checklist">10. レビュー観点</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="security.html">セキュリティ運用</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="security.html#minimum-checks">1. 最低限入れるチェック</a>
+                  </li>
+                  <li><a href="security.html#pip-audit">2. pip-audit</a>
+                  </li>
+                  <li><a href="security.html#pip-licenses">3. pip-licenses</a>
+                  </li>
+                  <li><a href="security.html#dependency-review">4. 依存追加時のレビュー観点</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
           </ol>
         </div>
       </details>
@@ -47,24 +196,20 @@
     <main class="content">
       <header class="hero">
         <h1>Poetry + pyenv から uv へ移行する</h1>
-        <p>現状の <code>pyenv + Poetry</code> 構成から、uv を社内標準として使うための導入・移行・運用手順を整理します。</p>
+        <p>Poetry + pyenv 構成の既存プロジェクトを uv ベースの運用へ移行する手順を整理します。</p>
       </header>
-      <section class="document-info" aria-labelledby="document-info-title">
-        <h2 id="document-info-title">Document Information</h2>
-        <dl class="metadata">
-          <div><dt>Version</dt><dd>0.2.0</dd></div>
-          <div><dt>Last updated</dt><dd>2026-06-11</dd></div>
-          <div><dt>Template</dt><dd>tyaso777/html-doc-template</dd></div>
-        </dl>
+
+      <section class="chapter-intro" aria-label="このページの目的">
+        <h2>ページ概要</h2>
+        <p>このページの目的は、Poetry + pyenv を前提にした既存プロジェクトを uv ベースの運用へ移行する手順と判断点を整理することです。単にコマンドを置き換えるのではなく、Python バージョン、仮想環境、依存解決、lock file、CI の扱いを揃えることを目的にします。</p>
       </section>
-      
       <section id="migration-goal" data-toc data-toc-title="移行のゴール">
-        <h2>移行のゴール</h2>
+        <h2>1. 移行のゴール</h2>
         <p>Poetry + pyenv から uv へ移行する目的は、単にコマンド名を置き換えることではありません。Python バージョン、仮想環境、依存解決、lock file、CI の実行手順を uv に揃え、開発者ごとの環境差分を減らすことがゴールです。</p>
         <aside class="callout callout-warning">移行 PR では、<code>poetry.lock</code> から <code>uv.lock</code> へ lock file が変わるため差分が大きくなります。依存追加や大きなバージョン更新とは別 PR に分け、移行そのものの差分をレビューしやすくします。</aside>
       </section>
       <section id="command-mapping" data-toc data-toc-title="コマンド対応表">
-        <h2>コマンド対応表</h2>
+        <h2>2. コマンド対応表</h2>
         <div class="table-wrap"><table><thead><tr><th>現在</th><th>uv</th><th>補足</th></tr></thead><tbody><tr><td><code>pyenv install 3.11.9</code></td><td><code>uv python install 3.11.9</code></td><td>uv で利用できる Python バージョンに限る。</td></tr>
 <tr><td><code>pyenv local 3.11.9</code></td><td><code>uv python pin 3.11.9</code></td><td><code>.python-version</code> を作成または更新する。</td></tr>
 <tr><td><code>poetry init</code></td><td><code>uv init</code></td><td>既存プロジェクトでは上書きに注意する。</td></tr>
@@ -75,8 +220,8 @@
 <tr><td><code>poetry lock</code></td><td><code>uv lock</code></td><td><code>poetry.lock</code> ではなく <code>uv.lock</code> を生成する。</td></tr>
 <tr><td><code>poetry env info</code></td><td><code>uv run python -c ...</code></td><td>必要なら <code>sys.executable</code> や <code>sys.version</code> を確認する。</td></tr></tbody></table></div>
       </section>
-      <section id="pre-migration-inventory" data-toc data-toc-title="1. 事前調査">
-        <h2>1. 事前調査</h2>
+      <section id="pre-migration-inventory" data-toc data-toc-title="事前調査">
+        <h2>3. 事前調査</h2>
         <p>最初に、現在のプロジェクトが Poetry と pyenv にどの程度依存しているかを確認します。この段階ではまだ lock file を更新しません。</p>
         <ol>
           <li><code>.python-version</code>、CI、Dockerfile、README に書かれている Python バージョンを確認する。</li>
@@ -91,8 +236,8 @@ poetry --version
 python --version
 Get-ChildItem -Recurse -File | Select-String -Pattern 'poetry|pyenv|POETRY_|poetry.lock'</code></pre>
       </section>
-      <section id="migration-policy" data-toc data-toc-title="2. 移行方針を決める">
-        <h2>2. 移行方針を決める</h2>
+      <section id="migration-policy" data-toc data-toc-title="移行方針を決める">
+        <h2>4. 移行方針を決める</h2>
         <p>手を動かす前に、移行後の標準を明確にします。ここが曖昧だと、ローカルでは動いても CI や他メンバーの環境で差分が出ます。</p>
         <ul>
           <li>Python バージョンは既存の <code>.python-version</code> を維持するか、移行と同時に変更するか。</li>
@@ -103,8 +248,8 @@ Get-ChildItem -Recurse -File | Select-String -Pattern 'poetry|pyenv|POETRY_|poet
           <li>Poetry 固有の package 設定や scripts を uv / PEP 621 形式へ移す範囲。</li>
         </ul>
       </section>
-      <section id="local-migration" data-toc data-toc-title="3. ローカルで移行する">
-        <h2>3. ローカルで移行する</h2>
+      <section id="local-migration" data-toc data-toc-title="ローカルで移行する">
+        <h2>5. ローカルで移行する</h2>
         <p>移行作業は専用ブランチで行います。まず uv で Python を固定し、lock file を作り、テストが通るところまで確認します。</p>
         <div class="code-caption">powershell</div>
 <pre class="code-block language-powershell"><code class="language-powershell">git switch -c migrate-to-uv
@@ -115,8 +260,8 @@ uv run python --version
 uv run pytest</code></pre>
         <aside class="callout callout-warning"><code>uv lock</code> は <code>poetry.lock</code> をそのまま変換するコマンドではありません。<code>pyproject.toml</code> の依存定義から uv が新しく解決し、<code>uv.lock</code> を生成します。</aside>
       </section>
-      <section id="pyproject-adjustments" data-toc data-toc-title="4. pyproject.toml を調整する">
-        <h2>4. pyproject.toml を調整する</h2>
+      <section id="pyproject-adjustments" data-toc data-toc-title="pyproject.toml を調整する">
+        <h2>6. pyproject.toml を調整する</h2>
         <p>Poetry だけが読む設定と、PEP 621 / uv が読む設定を分けて確認します。既存の <code>[tool.ruff]</code>、<code>[tool.pytest.ini_options]</code>、<code>[tool.mypy]</code> などのツール設定は基本的にそのまま維持します。</p>
         <ul>
           <li><code>[project]</code> の <code>requires-python</code> が実際の Python バージョンと合っているか確認する。</li>
@@ -131,8 +276,8 @@ uv run pytest</code></pre>
 <tr><td><code>pytest = &#123; group = "dev", version = "^8" &#125;</code></td><td><code>[dependency-groups].dev = ["pytest&gt;=8"]</code></td></tr>
 <tr><td><code>fastapi = &#123; extras = ["standard"], version = "^0.115" &#125;</code></td><td><code>"fastapi[standard]&gt;=0.115"</code></td></tr></tbody></table></div>
       </section>
-      <section id="verification" data-toc data-toc-title="5. 動作確認する">
-        <h2>5. 動作確認する</h2>
+      <section id="verification" data-toc data-toc-title="動作確認する">
+        <h2>7. 動作確認する</h2>
         <p>Poetry で実行していたチェックを uv 経由に置き換え、同じ結果になるか確認します。</p>
         <div class="code-caption">powershell</div>
 <pre class="code-block language-powershell"><code class="language-powershell">uv sync --locked
@@ -148,14 +293,14 @@ uv tree</code></pre>
           <li>proxy / SSL / private index が CI とローカルで同じように通るか。</li>
         </ul>
       </section>
-      <section id="ci-and-docker" data-toc data-toc-title="6. CI / Docker を更新する">
-        <h2>6. CI / Docker を更新する</h2>
+      <section id="ci-and-docker" data-toc data-toc-title="CI / Docker を更新する">
+        <h2>8. CI / Docker を更新する</h2>
         <p>CI では lock file を勝手に更新させないため、<code>uv sync --locked</code> を使います。社内 proxy や証明書が必要な場合は、ジョブ環境変数として <code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code> を設定します。</p>
         <div class="code-caption">yaml</div>
 <pre class="code-block language-yaml"><code class="language-yaml">- name: Install uv
   uses: astral-sh/setup-uv@v5
   with:
-    version: "0.8.0"
+    version: "0.11.8"
 
 - name: Install Python
   run: uv python install
@@ -167,8 +312,8 @@ uv tree</code></pre>
   run: uv run pytest</code></pre>
         <p>Dockerfile がある場合は、<code>poetry install</code>、<code>poetry export</code>、<code>pip install -r requirements.txt</code> のどれを使っているかを確認し、uv の sync / export に置き換えます。</p>
       </section>
-      <section id="cleanup" data-toc data-toc-title="7. Poetry / pyenv 前提を整理する">
-        <h2>7. Poetry / pyenv 前提を整理する</h2>
+      <section id="cleanup" data-toc data-toc-title="Poetry / pyenv 前提を整理する">
+        <h2>9. Poetry / pyenv 前提を整理する</h2>
         <p>テストと CI が通った後で、古い前提を整理します。先に消すと原因切り分けが難しくなるため、検証後に行います。</p>
         <ul>
           <li><code>poetry.lock</code> を削除し、<code>uv.lock</code> を追加する。</li>
@@ -178,8 +323,8 @@ uv tree</code></pre>
           <li>Poetry を完全に不要にするか、配布用途だけ残すかを明記する。</li>
         </ul>
       </section>
-      <section id="review-checklist" data-toc data-toc-title="8. レビュー観点">
-        <h2>8. レビュー観点</h2>
+      <section id="review-checklist" data-toc data-toc-title="レビュー観点">
+        <h2>10. レビュー観点</h2>
         <ul>
           <li><code>pyproject.toml</code> の依存定義が意図せず変わっていないか。</li>
           <li><code>uv.lock</code> の差分が移行目的に対して妥当か。</li>
@@ -189,10 +334,9 @@ uv tree</code></pre>
           <li>移行 PR に機能追加や依存の大幅更新が混ざっていないか。</li>
         </ul>
       </section>
-
-      <nav class="chapter-nav" aria-label="ページ移動"><a class="chapter-nav-link" href="usage.html"><span>Previous</span><strong>基本操作と概念</strong></a>
+      <nav class="chapter-nav" aria-label="ページ移動"><a class="chapter-nav-link" href="copy-existing-project.html"><span>Previous</span><strong>既存プロジェクトをコピーして始める方法</strong></a>
 <a class="chapter-nav-link next" href="security.html"><span>Next</span><strong>セキュリティ運用</strong></a></nav>
-      <footer class="footer">この文書は html-doc-template の CSS / JS / data-toc 構造に合わせたドラフトです。</footer>
+      <footer class="footer">最終更新: 2026-06-18</footer>
       
       <div class="visually-hidden" aria-hidden="true">
         <textarea id="python-code"></textarea>
