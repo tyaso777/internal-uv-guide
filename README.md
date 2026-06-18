@@ -16,3 +16,11 @@
 ## Template
 
 This document uses assets from [tyaso777/html-doc-template](https://github.com/tyaso777/html-doc-template).
+
+## Generate
+
+このリポジトリでは、公開用 HTML と生成スクリプトを同じ Git 管理対象にしています。
+
+```powershell
+python work\generate_uv_guide.py
+```
