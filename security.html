@@ -61,7 +61,7 @@
                   </li>
                   <li><a href="setup.html#system-certs">4. 社内 CA / SSL inspection</a>
                   </li>
-                  <li><a href="setup.html#private-index">5. private package repository</a>
+                  <li><a href="setup.html#private-index">5. 社内パッケージリポジトリ</a>
                   </li>
                   <li><a href="setup.html#exclude-newer">6. 新しすぎるリリースを避ける</a>
                   </li>
@@ -102,7 +102,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="start-project.html">プロジェクトの始め方</a></summary>
+                <summary><a href="start-project.html">新規 uv プロジェクトの始め方</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="start-project.html#prerequisites">1. 前提を確認する</a>
                   </li>
@@ -114,14 +114,12 @@
                   </li>
                   <li><a href="start-project.html#first-run">5. 初回実行する</a>
                   </li>
-                  <li><a href="start-project.html#commit-targets">6. コミット対象を確認する</a>
-                  </li>
                 </ol>
               </details>
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a></summary>
+                <summary><a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="copy-existing-project.html#copy-or-clone">1. プロジェクトを取得する</a>
                   </li>
@@ -129,11 +127,13 @@
                   </li>
                   <li><a href="copy-existing-project.html#check-python-version">3. Python バージョン指定を確認する</a>
                   </li>
-                  <li><a href="copy-existing-project.html#sync-environment">4. 環境を同期する</a>
+                  <li><a href="copy-existing-project.html#set-project-environment">4. 仮想環境の作成先を設定する</a>
                   </li>
-                  <li><a href="copy-existing-project.html#verify-project">5. 動作確認する</a>
+                  <li><a href="copy-existing-project.html#sync-environment">5. 環境を同期する</a>
                   </li>
-                  <li><a href="copy-existing-project.html#lock-file-policy">6. lock file 更新の扱い</a>
+                  <li><a href="copy-existing-project.html#verify-project">6. 動作確認する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#lock-file-policy">7. lock file 更新の扱い</a>
                   </li>
                 </ol>
               </details>
@@ -146,21 +146,17 @@
                   </li>
                   <li><a href="migration.html#command-mapping">2. コマンド対応表</a>
                   </li>
-                  <li><a href="migration.html#pre-migration-inventory">3. 事前調査</a>
+                  <li><a href="migration.html#migration-policy">3. 移行方針を決める</a>
                   </li>
-                  <li><a href="migration.html#migration-policy">4. 移行方針を決める</a>
+                  <li><a href="migration.html#local-migration">4. ローカルで移行する</a>
                   </li>
-                  <li><a href="migration.html#local-migration">5. ローカルで移行する</a>
+                  <li><a href="migration.html#pyproject-adjustments">5. pyproject.toml を調整する</a>
                   </li>
-                  <li><a href="migration.html#pyproject-adjustments">6. pyproject.toml を調整する</a>
+                  <li><a href="migration.html#verification">6. 動作確認する</a>
                   </li>
-                  <li><a href="migration.html#verification">7. 動作確認する</a>
+                  <li><a href="migration.html#cleanup">7. Poetry / pyenv 前提を整理する</a>
                   </li>
-                  <li><a href="migration.html#ci-and-docker">8. CI / Docker を更新する</a>
-                  </li>
-                  <li><a href="migration.html#cleanup">9. Poetry / pyenv 前提を整理する</a>
-                  </li>
-                  <li><a href="migration.html#review-checklist">10. レビュー観点</a>
+                  <li><a href="migration.html#review-checklist">8. レビュー観点</a>
                   </li>
                 </ol>
               </details>
@@ -201,7 +197,7 @@
 
       <section class="chapter-intro" aria-label="このページの目的">
         <h2>ページ概要</h2>
-        <p>このページの目的は、uv で依存関係を管理するプロジェクトに対して、脆弱性監査、ライセンス確認、依存追加時レビューをどのように組み込むかを整理することです。監査ツールの導入例と、CI やレビューで確認する観点を扱います。</p>
+        <p>このページの目的は、uv で依存関係を管理するプロジェクトに対して、脆弱性監査、ライセンス確認、依存追加時レビューをどのように組み込むかを整理することです。監査ツールの導入例と、レビューで確認する観点を扱います。</p>
       </section>
       <section id="minimum-checks" data-toc data-toc-title="最低限入れるチェック">
         <h2>1. 最低限入れるチェック</h2>

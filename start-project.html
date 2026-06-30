@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>uv で新規プロジェクトを始める - 社内 uv 利用ガイド</title>
+  <title>新規 uv プロジェクトの始め方 - 社内 uv 利用ガイド</title>
   <link rel="stylesheet" href="assets/css/technical-doc.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
 </head>
@@ -61,7 +61,7 @@
                   </li>
                   <li><a href="setup.html#system-certs">4. 社内 CA / SSL inspection</a>
                   </li>
-                  <li><a href="setup.html#private-index">5. private package repository</a>
+                  <li><a href="setup.html#private-index">5. 社内パッケージリポジトリ</a>
                   </li>
                   <li><a href="setup.html#exclude-newer">6. 新しすぎるリリースを避ける</a>
                   </li>
@@ -102,7 +102,7 @@
             </li>
             <li class="site-contents-chapter">
               <details open>
-                <summary><a href="start-project.html" aria-current="page">プロジェクトの始め方</a></summary>
+                <summary><a href="start-project.html" aria-current="page">新規 uv プロジェクトの始め方</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="start-project.html#prerequisites">1. 前提を確認する</a>
                   </li>
@@ -114,14 +114,12 @@
                   </li>
                   <li><a href="start-project.html#first-run">5. 初回実行する</a>
                   </li>
-                  <li><a href="start-project.html#commit-targets">6. コミット対象を確認する</a>
-                  </li>
                 </ol>
               </details>
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a></summary>
+                <summary><a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="copy-existing-project.html#copy-or-clone">1. プロジェクトを取得する</a>
                   </li>
@@ -129,11 +127,13 @@
                   </li>
                   <li><a href="copy-existing-project.html#check-python-version">3. Python バージョン指定を確認する</a>
                   </li>
-                  <li><a href="copy-existing-project.html#sync-environment">4. 環境を同期する</a>
+                  <li><a href="copy-existing-project.html#set-project-environment">4. 仮想環境の作成先を設定する</a>
                   </li>
-                  <li><a href="copy-existing-project.html#verify-project">5. 動作確認する</a>
+                  <li><a href="copy-existing-project.html#sync-environment">5. 環境を同期する</a>
                   </li>
-                  <li><a href="copy-existing-project.html#lock-file-policy">6. lock file 更新の扱い</a>
+                  <li><a href="copy-existing-project.html#verify-project">6. 動作確認する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#lock-file-policy">7. lock file 更新の扱い</a>
                   </li>
                 </ol>
               </details>
@@ -146,21 +146,17 @@
                   </li>
                   <li><a href="migration.html#command-mapping">2. コマンド対応表</a>
                   </li>
-                  <li><a href="migration.html#pre-migration-inventory">3. 事前調査</a>
+                  <li><a href="migration.html#migration-policy">3. 移行方針を決める</a>
                   </li>
-                  <li><a href="migration.html#migration-policy">4. 移行方針を決める</a>
+                  <li><a href="migration.html#local-migration">4. ローカルで移行する</a>
                   </li>
-                  <li><a href="migration.html#local-migration">5. ローカルで移行する</a>
+                  <li><a href="migration.html#pyproject-adjustments">5. pyproject.toml を調整する</a>
                   </li>
-                  <li><a href="migration.html#pyproject-adjustments">6. pyproject.toml を調整する</a>
+                  <li><a href="migration.html#verification">6. 動作確認する</a>
                   </li>
-                  <li><a href="migration.html#verification">7. 動作確認する</a>
+                  <li><a href="migration.html#cleanup">7. Poetry / pyenv 前提を整理する</a>
                   </li>
-                  <li><a href="migration.html#ci-and-docker">8. CI / Docker を更新する</a>
-                  </li>
-                  <li><a href="migration.html#cleanup">9. Poetry / pyenv 前提を整理する</a>
-                  </li>
-                  <li><a href="migration.html#review-checklist">10. レビュー観点</a>
+                  <li><a href="migration.html#review-checklist">8. レビュー観点</a>
                   </li>
                 </ol>
               </details>
@@ -195,7 +191,7 @@
     </aside>
     <main class="content">
       <header class="hero">
-        <h1>uv で新規プロジェクトを始める</h1>
+        <h1>新規 uv プロジェクトの始め方</h1>
         <p>uv を使って新規 Python プロジェクトを作成し、初回実行できる状態にする流れを示します。</p>
       </header>
 
@@ -278,12 +274,8 @@ uv sync
 uv run python --version
 uv run pytest</code></pre>
       </section>
-      <section id="commit-targets" data-toc data-toc-title="コミット対象を確認する">
-        <h2>6. コミット対象を確認する</h2>
-        <p>通常は <code>pyproject.toml</code>、<code>uv.lock</code>、<code>.python-version</code> をコミット対象にします。<code>.venv</code> は各端末で再生成するためコミットしません。</p>
-      </section>
       <nav class="chapter-nav" aria-label="ページ移動"><a class="chapter-nav-link" href="usage.html"><span>Previous</span><strong>基本操作と概念</strong></a>
-<a class="chapter-nav-link next" href="copy-existing-project.html"><span>Next</span><strong>既存プロジェクトをコピーして始める方法</strong></a></nav>
+<a class="chapter-nav-link next" href="copy-existing-project.html"><span>Next</span><strong>clone・コピーした uv プロジェクトの始め方</strong></a></nav>
       <footer class="footer">最終更新: 2026-06-18</footer>
       
       <div class="visually-hidden" aria-hidden="true">

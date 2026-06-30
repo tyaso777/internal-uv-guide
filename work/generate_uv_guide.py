@@ -10,8 +10,8 @@ PAGES = [
     ("install.html", "インストール", "uv のインストール"),
     ("setup.html", "ネットワーク設定の基本", "uv のネットワーク設定の基本"),
     ("usage.html", "基本操作と概念", "uv の基本操作と概念"),
-    ("start-project.html", "プロジェクトの始め方", "uv で新規プロジェクトを始める"),
-    ("copy-existing-project.html", "既存プロジェクトをコピーして始める方法", "uv 対応済みプロジェクトを手元で動かす"),
+    ("start-project.html", "新規 uv プロジェクトの始め方", "新規 uv プロジェクトの始め方"),
+    ("copy-existing-project.html", "clone・コピーした uv プロジェクトの始め方", "clone・コピーした uv プロジェクトの始め方"),
     ("migration.html", "Poetry + pyenv からの移行", "Poetry + pyenv から uv へ移行する"),
     ("security.html", "セキュリティ運用", "uv 利用時のセキュリティ運用"),
 ]
@@ -19,7 +19,7 @@ PAGES = [
 PAGE_SUMMARIES = [
     "社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。",
     "社内標準の uv バージョンを Windows 端末へ導入し、uv コマンドを利用できる状態にします。",
-    "社内 proxy、証明書、private package repository など、uv のネットワーク設定の考え方を整理します。",
+    "社内 proxy、証明書、社内パッケージリポジトリなど、uv のネットワーク設定の考え方を整理します。",
     "uv を使ううえで必要になる主要概念、基本コマンド、依存関係の記法を整理します。",
     "uv を使って新規 Python プロジェクトを作成し、初回実行できる状態にする流れを示します。",
     "uv 対応済みの既存プロジェクトを取得し、lock file を尊重して手元で動かす流れを示します。",
@@ -266,15 +266,15 @@ def shell(title, body, idx, toc_entries_by_page):
 index_body = f"""
       <section id="purpose" data-toc data-toc-title="目的">
         <h2>目的</h2>
-        <p>このガイドは、社内の Python 開発環境を uv ベースで導入・移行・運用するための標準手順をまとめたものです。Windows 端末、社内 proxy、社内 CA、private package repository を利用する環境を主な対象にしています。</p>
-        <p>開発者が同じ手順で Python、仮想環境、依存関係、lock file、監査コマンドを扱えるようにし、ローカル環境と CI の差分を小さくすることを目的とします。</p>
+        <p>このガイドは、社内の Python 開発環境を uv ベースで導入・移行・運用するための標準手順をまとめたものです。Windows 端末、社内 proxy、社内 CA、社内パッケージリポジトリを利用する環境を主な対象にしています。</p>
+        <p>開発者が同じ手順で Python、仮想環境、依存関係、lock file、監査コマンドを扱えるようにし、ローカル環境の差分を小さくすることを目的とします。</p>
       </section>
       <section id="target-readers" data-toc data-toc-title="対象読者">
         <h2>対象読者</h2>
         <ul>
           <li>Python プロジェクトを新規に作成する開発者</li>
           <li><code>pyenv + Poetry</code> 構成の既存プロジェクトを uv へ移行する担当者</li>
-          <li>社内 proxy、証明書、private index、CI 設定を整備する担当者</li>
+          <li>社内 proxy、証明書、社内パッケージリポジトリを整備する担当者</li>
           <li>依存パッケージの脆弱性監査やライセンス確認を運用する担当者</li>
         </ul>
       </section>
@@ -282,12 +282,12 @@ index_body = f"""
         <h2>ガイド構成</h2>
         {table(["ページ", "主な内容", "読むタイミング"], [
             ['<a href="install.html">インストール</a>', 'proxy 配下での導入、uv バージョン固定、導入確認', '初回導入時'],
-            ['<a href="setup.html">ネットワーク設定の基本</a>', '<code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code>、private package repository、依存解決の考え方', '初回導入時、SSL エラー対応時'],
+            ['<a href="setup.html">ネットワーク設定の基本</a>', '<code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code>、社内パッケージリポジトリ、依存解決の考え方', '初回導入時、SSL エラー対応時'],
             ['<a href="usage.html">基本操作と概念</a>', 'プロジェクト、仮想環境、lock、sync、tool、pip 互換', '日常開発'],
-            ['<a href="start-project.html">プロジェクトの始め方</a>', '新規プロジェクト作成、Python バージョン固定、初回依存追加、初回実行', '新規開発開始時'],
-            ['<a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a>', 'clone / コピー後の同期、既存 lock file の利用、動作確認', '既存 uv プロジェクト利用時'],
-            ['<a href="migration.html">Poetry + pyenv からの移行</a>', '対応表、移行手順、互換でない点、CI 変更', '既存プロジェクト移行時'],
-            ['<a href="security.html">セキュリティ運用</a>', '<code>pip-audit</code>、<code>pip-licenses</code>、依存追加時チェック、CI 監査', '標準化、監査、リリース前'],
+            ['<a href="start-project.html">新規 uv プロジェクトの始め方</a>', '新規プロジェクト作成、Python バージョン固定、初回依存追加、初回実行', '新規開発開始時'],
+            ['<a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a>', 'clone / コピー後の同期、既存 lock file の利用、動作確認', '既存 uv プロジェクト利用時'],
+            ['<a href="migration.html">Poetry + pyenv からの移行</a>', '対応表、移行手順、互換でない点', '既存プロジェクト移行時'],
+            ['<a href="security.html">セキュリティ運用</a>', '<code>pip-audit</code>、<code>pip-licenses</code>、依存追加時チェック', '標準化、監査、リリース前'],
         ])}
       </section>
       <section id="operational-assumptions" data-toc data-toc-title="運用上の前提">
@@ -295,10 +295,9 @@ index_body = f"""
         <ul>
           <li>uv 本体は、社内で確認済みの標準バージョンを利用します。</li>
           <li>プロジェクトの Python バージョンは <code>.python-version</code> と <code>pyproject.toml</code> で明示します。</li>
-          <li>社内 proxy と証明書設定は、ユーザー環境変数または CI の環境変数で管理します。</li>
+          <li>社内 proxy と証明書設定は、ユーザー環境変数で管理します。</li>
           <li>依存パッケージの解決では、必要に応じて <code>--exclude-newer "X days"</code> を使い、公開直後のパッケージを避けます。</li>
-          <li>アプリケーション開発では <code>uv.lock</code> をコミットし、レビュー対象に含めます。</li>
-          <li>脆弱性監査とライセンス監査は、ローカル確認と CI の両方で実行できる形にします。</li>
+          <li>脆弱性監査とライセンス監査は、ローカルで実行できる形にします。</li>
         </ul>
       </section>
 """
@@ -335,8 +334,8 @@ install_body = f"""
 setup_body = f"""
       <section class="chapter-intro" aria-label="このページの目的">
         <h2>ページ概要</h2>
-        <p>このページの目的は、社内ネットワーク配下で uv を安定して利用するために必要な環境変数と設定の考え方を整理することです。社内 proxy、SSL inspection、社内 CA、private package repository を利用する環境を前提に、<code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code> などの設定方法を説明します。</p>
-        <p>実際の作業手順は、<a href="start-project.html">プロジェクトの始め方</a> と <a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a> で改めて記載します。このページでは、各設定が何のためのものか、どこに保存されるか、どの範囲に効くかを押さえます。</p>
+        <p>このページの目的は、社内ネットワーク配下で uv を安定して利用するために必要な環境変数と設定の考え方を整理することです。社内 proxy、SSL inspection、社内 CA、社内パッケージリポジトリを利用する環境を前提に、<code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code> などの設定方法を説明します。</p>
+        <p>実際の作業手順は、<a href="start-project.html">新規 uv プロジェクトの始め方</a> と <a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a> で改めて記載します。このページでは、各設定が何のためのものか、どこに保存されるか、どの範囲に効くかを押さえます。</p>
       </section>
       <section id="proxy-check" data-toc data-toc-title="proxy の確認">
         <h2>proxy の確認</h2>
@@ -399,11 +398,11 @@ setup_body = f"""
         <p>継続して必要な端末では、Windows のユーザー環境変数として永続化します。保存場所は Windows のユーザー環境変数です。</p>
         {code("powershell", '# OS の証明書ストアを使う設定を Windows のユーザー環境変数として保存する\\n[Environment]::SetEnvironmentVariable("UV_SYSTEM_CERTS", "1", "User")\\n\\n# 新しい PowerShell を開き、保存された値が反映されていることを確認する\\necho $env:UV_SYSTEM_CERTS')}
       </section>
-      <section id="private-index" data-toc data-toc-title="private package repository">
-        <h2>private package repository</h2>
-        <p>private package repository は、社内で作成した Python パッケージや、社内でミラーした外部パッケージを配布するためのパッケージ置き場です。PyPI ではなく社内の package index から取得する必要があるプロジェクトで使います。</p>
+      <section id="private-index" data-toc data-toc-title="社内パッケージリポジトリ">
+        <h2>社内パッケージリポジトリ</h2>
+        <p>社内パッケージリポジトリは、社内で作成した Python パッケージや、社内でミラーした外部パッケージを配布するためのパッケージ置き場です。PyPI ではなく社内のパッケージリポジトリから取得する必要があるプロジェクトで使います。</p>
         <p>すべてのプロジェクトで設定するものではありません。公開 PyPI から依存パッケージを取得できるプロジェクトや、社内 private package を使わないプロジェクトでは、この設定は不要です。</p>
-        <p>private package repository をプロジェクトごとに固定する場合は、プロジェクトの <code>pyproject.toml</code> に保存します。この設定はリポジトリに含まれるため、レビューと履歴管理の対象になります。</p>
+        <p>社内パッケージリポジトリをプロジェクトごとに固定する場合は、プロジェクトの <code>pyproject.toml</code> に保存します。この設定はリポジトリに含まれるため、レビューと履歴管理の対象になります。</p>
         {code("toml", '[[tool.uv.index]]\\nname = "internal"\\nurl = "https://packages.example.co.jp/simple"\\ndefault = true')}
         <p>端末全体の既定値として保存する場合は、Windows では <code>%APPDATA%\\uv\\uv.toml</code> を使います。ユーザー設定に入れると、複数プロジェクトへ影響するため、社内標準として配布する設定だけにします。</p>
         {code("toml", '[[index]]\\nname = "internal"\\nurl = "https://packages.example.co.jp/simple"\\ndefault = true')}
@@ -412,14 +411,14 @@ setup_body = f"""
         <h2>新しすぎるリリースを避ける</h2>
         <p>依存パッケージの公開直後は、破損した wheel、差し戻し、悪意あるパッケージ混入、社内 mirror への反映遅延が起きる可能性があります。</p>
         {code("powershell", '# コマンド実行時に、直近 7 日以内に公開された依存パッケージを避ける\\nuv lock --exclude-newer "7 days"\\nuv sync --exclude-newer "7 days"\\n\\n# この PowerShell セッションの既定値として設定する\\n$env:UV_EXCLUDE_NEWER="7 days"\\n\\n# 設定された値で lock / sync を実行する\\nuv lock\\nuv sync')}
-        <p><code>X=7</code> とする場合は、<code>--exclude-newer "7 days"</code> または <code>UV_EXCLUDE_NEWER="7 days"</code> を指定します。<code>$env:UV_EXCLUDE_NEWER</code> は現在の PowerShell セッションだけに効きます。永続化する場合はユーザー環境変数として保存できますが、lock file 更新の意図が見えにくくなるため、社内標準ではコマンドライン引数またはCIスクリプトで明示します。</p>
+        <p><code>X=7</code> とする場合は、<code>--exclude-newer "7 days"</code> または <code>UV_EXCLUDE_NEWER="7 days"</code> を指定します。<code>$env:UV_EXCLUDE_NEWER</code> は現在の PowerShell セッションだけに効きます。永続化する場合はユーザー環境変数として保存できますが、lock file 更新の意図が見えにくくなるため、社内標準ではコマンドライン引数で明示します。</p>
       </section>
 """
 
 usage_body = f"""
       <section class="chapter-intro" aria-label="このページの目的">
         <h2>ページ概要</h2>
-        <p>このページの目的は、uv を使ううえで必要になる基本概念、主要コマンド、依存関係の書き方を整理することです。実際の作業手順は、<a href="start-project.html">プロジェクトの始め方</a> や <a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a> で扱います。</p>
+        <p>このページの目的は、uv を使ううえで必要になる基本概念、主要コマンド、依存関係の書き方を整理することです。実際の作業手順は、<a href="start-project.html">新規 uv プロジェクトの始め方</a> や <a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a> で扱います。</p>
       </section>
       <section id="core-concepts" data-toc data-toc-title="主要概念">
         <h2>主要概念</h2>
@@ -501,7 +500,7 @@ usage_body = f"""
         <h3 id="direct-url-git-path" data-toc data-toc-level="3" data-toc-title="direct URL / Git / path">direct URL / Git / path</h3>
         <p>通常の社内開発では package index からの依存を優先します。Git、URL、path 依存は再現性、認証、監査、ライセンス確認が難しくなるため、必要な場合だけ使います。</p>
         {code("powershell", 'uv add "my-package @ git+https://github.com/example/my-package.git@v1.2.3"\\nuv add "my-lib @ file:///${PWD}/libs/my-lib"')}
-        <aside class="callout callout-warning">Git や path 依存を使う場合は、参照先、タグまたは commit、認証方式、CI で取得できることを必ず確認します。社内標準では private package repository へ配布してから通常依存として追加する方がレビューしやすいです。</aside>
+        <aside class="callout callout-warning">Git や path 依存を使う場合は、参照先、タグまたは commit、認証方式を必ず確認します。社内標準では社内パッケージリポジトリへ配布してから通常依存として追加する方がレビューしやすいです。</aside>
       </section>
       <section id="python-management" data-toc data-toc-title="Python の管理">
         <h2>Python の管理</h2>
@@ -544,10 +543,6 @@ start_project_body = f"""
         <h2>初回実行する</h2>
         {code("powershell", 'uv lock\\nuv sync\\nuv run python --version\\nuv run pytest')}
       </section>
-      <section id="commit-targets" data-toc data-toc-title="コミット対象を確認する">
-        <h2>コミット対象を確認する</h2>
-        <p>通常は <code>pyproject.toml</code>、<code>uv.lock</code>、<code>.python-version</code> をコミット対象にします。<code>.venv</code> は各端末で再生成するためコミットしません。</p>
-      </section>
 """
 
 copy_existing_project_body = f"""
@@ -570,6 +565,11 @@ copy_existing_project_body = f"""
         <p><code>.python-version</code> と <code>pyproject.toml</code> の <code>requires-python</code> を確認し、プロジェクトが想定する Python バージョンで同期します。</p>
         {code("powershell", 'Get-Content .python-version\\nSelect-String -Path pyproject.toml -Pattern "requires-python"')}
       </section>
+      <section id="set-project-environment" data-toc data-toc-title="仮想環境の作成先を設定する">
+        <h2>仮想環境の作成先を設定する</h2>
+        <p>共有フォルダ上で作業する場合は、<code>uv sync</code> の前に <code>UV_PROJECT_ENVIRONMENT</code> を設定します。clone またはコピーしたプロジェクトでは、現在いるプロジェクトフォルダ名と保存場所から、このプロジェクト用の仮想環境パスを作ります。</p>
+        {code("powershell", '# プロジェクトフォルダの絶対パスを取得する\\n$projectRoot=(Resolve-Path .).Path\\n\\n# プロジェクト名を現在のフォルダ名から取得する\\n$projectName=Split-Path -Leaf $projectRoot\\n\\n# 同じプロジェクト名の仮想環境と衝突しないように、\\n# プロジェクトの保存場所をもとに短いハッシュを作る\\n$normalizedProjectRoot=$projectRoot.ToLowerInvariant()\\n$sha256=[System.Security.Cryptography.SHA256]::Create()\\n$hashBytes=$sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($normalizedProjectRoot))\\n$hash=([System.BitConverter]::ToString($hashBytes) -replace "-", "").Substring(0,8).ToLowerInvariant()\\n\\n# 仮想環境の作成先を、このプロジェクト用のローカルフォルダに設定する\\n$env:UV_PROJECT_ENVIRONMENT="$env:USERPROFILE\\.uv\\venvs\\$projectName-$hash"\\n\\n# 設定された仮想環境の場所を確認する\\necho $env:UV_PROJECT_ENVIRONMENT')}
+      </section>
       <section id="sync-environment" data-toc data-toc-title="環境を同期する">
         <h2>環境を同期する</h2>
         <p>既存の lock file を使って環境を再現します。通常の利用開始時は lock file を更新しません。</p>
@@ -588,11 +588,11 @@ copy_existing_project_body = f"""
 migration_body = f"""
       <section class="chapter-intro" aria-label="このページの目的">
         <h2>ページ概要</h2>
-        <p>このページの目的は、Poetry + pyenv を前提にした既存プロジェクトを uv ベースの運用へ移行する手順と判断点を整理することです。単にコマンドを置き換えるのではなく、Python バージョン、仮想環境、依存解決、lock file、CI の扱いを揃えることを目的にします。</p>
+        <p>このページの目的は、Poetry + pyenv を前提にした既存プロジェクトを uv ベースの運用へ移行する手順と判断点を整理することです。単にコマンドを置き換えるのではなく、Python バージョン、仮想環境、依存解決、lock file の扱いを揃えることを目的にします。</p>
       </section>
       <section id="migration-goal" data-toc data-toc-title="移行のゴール">
         <h2>移行のゴール</h2>
-        <p>Poetry + pyenv から uv へ移行する目的は、単にコマンド名を置き換えることではありません。Python バージョン、仮想環境、依存解決、lock file、CI の実行手順を uv に揃え、開発者ごとの環境差分を減らすことがゴールです。</p>
+        <p>Poetry + pyenv から uv へ移行する目的は、単にコマンド名を置き換えることではありません。Python バージョン、仮想環境、依存解決、lock file の扱いを uv に揃え、開発者ごとの環境差分を減らすことがゴールです。</p>
         <aside class="callout callout-warning">移行 PR では、<code>poetry.lock</code> から <code>uv.lock</code> へ lock file が変わるため差分が大きくなります。依存追加や大きなバージョン更新とは別 PR に分け、移行そのものの差分をレビューしやすくします。</aside>
       </section>
       <section id="command-mapping" data-toc data-toc-title="コマンド対応表">
@@ -609,34 +609,21 @@ migration_body = f"""
             ["<code>poetry env info</code>", "<code>uv run python -c ...</code>", "必要なら <code>sys.executable</code> や <code>sys.version</code> を確認する。"],
         ])}
       </section>
-      <section id="pre-migration-inventory" data-toc data-toc-title="事前調査">
-        <h2>事前調査</h2>
-        <p>最初に、現在のプロジェクトが Poetry と pyenv にどの程度依存しているかを確認します。この段階ではまだ lock file を更新しません。</p>
-        <ol>
-          <li><code>.python-version</code>、CI、Dockerfile、README に書かれている Python バージョンを確認する。</li>
-          <li><code>pyproject.toml</code> の <code>[tool.poetry]</code>、依存関係、dev group、scripts、package 設定を確認する。</li>
-          <li><code>poetry.lock</code> が最新か、現在の CI が <code>poetry install</code> で通っているか確認する。</li>
-          <li>Poetry plugin、private index、認証、社内 CA、proxy 設定の有無を確認する。</li>
-          <li><code>poetry</code>、<code>pyenv</code>、<code>poetry.lock</code>、<code>POETRY_</code> をリポジトリ内で検索する。</li>
-        </ol>
-        {code("powershell", "uv --version\\npoetry --version\\npython --version\\nGet-ChildItem -Recurse -File | Select-String -Pattern 'poetry|pyenv|POETRY_|poetry.lock'")}
-      </section>
       <section id="migration-policy" data-toc data-toc-title="移行方針を決める">
         <h2>移行方針を決める</h2>
-        <p>手を動かす前に、移行後の標準を明確にします。ここが曖昧だと、ローカルでは動いても CI や他メンバーの環境で差分が出ます。</p>
+        <p>手を動かす前に、移行後の標準を明確にします。ここが曖昧だと、他メンバーの環境で差分が出ます。</p>
         <ul>
           <li>Python バージョンは既存の <code>.python-version</code> を維持するか、移行と同時に変更するか。</li>
           <li>uv 本体の標準バージョンを何にするか。</li>
-          <li><code>uv.lock</code> をコミット対象にするか。アプリケーション開発では原則コミットする。</li>
           <li>依存解決時の <code>--exclude-newer "X days"</code> を標準にするか。</li>
-          <li>private index を <code>pyproject.toml</code> に書くか、ユーザー / CI の uv 設定に置くか。</li>
+          <li>社内パッケージリポジトリの参照先を <code>pyproject.toml</code> に書くか、ユーザーの uv 設定に置くか。</li>
           <li>Poetry 固有の package 設定や scripts を uv / PEP 621 形式へ移す範囲。</li>
         </ul>
       </section>
       <section id="local-migration" data-toc data-toc-title="ローカルで移行する">
         <h2>ローカルで移行する</h2>
-        <p>移行作業は専用ブランチで行います。まず uv で Python を固定し、lock file を作り、テストが通るところまで確認します。</p>
-        {code("powershell", 'git switch -c migrate-to-uv\\nuv python pin 3.12\\nuv lock --exclude-newer "7 days"\\nuv sync\\nuv run python --version\\nuv run pytest')}
+        <p>まず uv で Python を固定し、lock file を作り、テストが通るところまで確認します。</p>
+        {code("powershell", 'uv python pin 3.12\\nuv lock --exclude-newer "7 days"\\nuv sync\\nuv run python --version\\nuv run pytest')}
         <aside class="callout callout-warning"><code>uv lock</code> は <code>poetry.lock</code> をそのまま変換するコマンドではありません。<code>pyproject.toml</code> の依存定義から uv が新しく解決し、<code>uv.lock</code> を生成します。</aside>
       </section>
       <section id="pyproject-adjustments" data-toc data-toc-title="pyproject.toml を調整する">
@@ -646,7 +633,7 @@ migration_body = f"""
           <li><code>[project]</code> の <code>requires-python</code> が実際の Python バージョンと合っているか確認する。</li>
           <li>runtime dependency と dev dependency が正しいグループに入っているか確認する。</li>
           <li>Poetry の scripts を使っている場合、<code>[project.scripts]</code> へ移せるか確認する。</li>
-          <li>private index の URL に認証情報を直接書いていないか確認する。</li>
+          <li>社内パッケージリポジトリの URL に認証情報を直接書いていないか確認する。</li>
           <li>パッケージとして配布しないアプリケーションなら、build 設定が不要か確認する。</li>
         </ul>
         <p>Poetry では <code>[tool.poetry.dependencies]</code> に TOML テーブル形式で依存を書くことがありますが、uv では通常 <code>[project].dependencies</code> に PEP 508 文字列として記録します。Poetry の <code>^2.2</code> のような caret requirement は、<code>&gt;=2.2,&lt;3</code> のように範囲指定へ展開します。依存追加は <code>uv add "pandas&gt;=2.2,&lt;3"</code> のように行い、記法の詳細は <a href="usage.html#pyproject-dependency-notation">pyproject.toml のライブラリ記法</a> と <a href="usage.html#poetry-caret-notation">Poetry の ^ 記法との対応</a> を参照します。</p>
@@ -666,22 +653,16 @@ migration_body = f"""
           <li>テスト結果が Poetry 環境と一致するか。</li>
           <li>CLI entry point やアプリ起動コマンドが動くか。</li>
           <li>Jupyter、pre-commit、IDE の interpreter 設定が <code>.venv</code> を参照できるか。</li>
-          <li>proxy / SSL / private index が CI とローカルで同じように通るか。</li>
+          <li>proxy / SSL / 社内パッケージリポジトリの設定で依存パッケージを取得できるか。</li>
         </ul>
-      </section>
-      <section id="ci-and-docker" data-toc data-toc-title="CI / Docker を更新する">
-        <h2>CI / Docker を更新する</h2>
-        <p>CI では lock file を勝手に更新させないため、<code>uv sync --locked</code> を使います。社内 proxy や証明書が必要な場合は、ジョブ環境変数として <code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code> を設定します。</p>
-        {code("yaml", '- name: Install uv\\n  uses: astral-sh/setup-uv@v5\\n  with:\\n    version: "0.11.8"\\n\\n- name: Install Python\\n  run: uv python install\\n\\n- name: Sync dependencies\\n  run: uv sync --locked\\n\\n- name: Run tests\\n  run: uv run pytest')}
-        <p>Dockerfile がある場合は、<code>poetry install</code>、<code>poetry export</code>、<code>pip install -r requirements.txt</code> のどれを使っているかを確認し、uv の sync / export に置き換えます。</p>
       </section>
       <section id="cleanup" data-toc data-toc-title="Poetry / pyenv 前提を整理する">
         <h2>Poetry / pyenv 前提を整理する</h2>
-        <p>テストと CI が通った後で、古い前提を整理します。先に消すと原因切り分けが難しくなるため、検証後に行います。</p>
+        <p>テストが通った後で、古い前提を整理します。先に消すと原因切り分けが難しくなるため、検証後に行います。</p>
         <ul>
           <li><code>poetry.lock</code> を削除し、<code>uv.lock</code> を追加する。</li>
           <li>README の <code>poetry install</code>、<code>poetry run</code>、<code>pyenv install</code> を uv コマンドに置き換える。</li>
-          <li>CI、Dockerfile、pre-commit、開発者向けセットアップ手順から Poetry 前提を除く。</li>
+          <li>pre-commit、開発者向けセットアップ手順から Poetry 前提を除く。</li>
           <li><code>.python-version</code> は uv でも使うため、必要なら維持する。</li>
           <li>Poetry を完全に不要にするか、配布用途だけ残すかを明記する。</li>
         </ul>
@@ -691,8 +672,8 @@ migration_body = f"""
         <ul>
           <li><code>pyproject.toml</code> の依存定義が意図せず変わっていないか。</li>
           <li><code>uv.lock</code> の差分が移行目的に対して妥当か。</li>
-          <li>Python バージョンが CI、ローカル、Docker で一致しているか。</li>
-          <li>proxy / SSL / private index の設定に認証情報が混入していないか。</li>
+          <li>Python バージョンがローカル環境で想定通りになっているか。</li>
+          <li>proxy / SSL / 社内パッケージリポジトリの設定に認証情報が混入していないか。</li>
           <li>README の手順だけで新規開発者が環境構築できるか。</li>
           <li>移行 PR に機能追加や依存の大幅更新が混ざっていないか。</li>
         </ul>
@@ -702,7 +683,7 @@ migration_body = f"""
 security_body = f"""
       <section class="chapter-intro" aria-label="このページの目的">
         <h2>ページ概要</h2>
-        <p>このページの目的は、uv で依存関係を管理するプロジェクトに対して、脆弱性監査、ライセンス確認、依存追加時レビューをどのように組み込むかを整理することです。監査ツールの導入例と、CI やレビューで確認する観点を扱います。</p>
+        <p>このページの目的は、uv で依存関係を管理するプロジェクトに対して、脆弱性監査、ライセンス確認、依存追加時レビューをどのように組み込むかを整理することです。監査ツールの導入例と、レビューで確認する観点を扱います。</p>
       </section>
       <section id="minimum-checks" data-toc data-toc-title="最低限入れるチェック">
         <h2>最低限入れるチェック</h2>

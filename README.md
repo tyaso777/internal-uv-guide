@@ -8,8 +8,8 @@
 - [インストール](install.html)
 - [ネットワーク設定の基本](setup.html)
 - [基本操作と概念](usage.html)
-- [プロジェクトの始め方](start-project.html)
-- [既存プロジェクトをコピーして始める方法](copy-existing-project.html)
+- [新規 uv プロジェクトの始め方](start-project.html)
+- [clone・コピーした uv プロジェクトの始め方](copy-existing-project.html)
 - [Poetry + pyenv からの移行](migration.html)
 - [セキュリティ運用](security.html)
 

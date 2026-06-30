@@ -61,7 +61,7 @@
                   </li>
                   <li><a href="setup.html#system-certs">4. 社内 CA / SSL inspection</a>
                   </li>
-                  <li><a href="setup.html#private-index">5. private package repository</a>
+                  <li><a href="setup.html#private-index">5. 社内パッケージリポジトリ</a>
                   </li>
                   <li><a href="setup.html#exclude-newer">6. 新しすぎるリリースを避ける</a>
                   </li>
@@ -102,7 +102,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="start-project.html">プロジェクトの始め方</a></summary>
+                <summary><a href="start-project.html">新規 uv プロジェクトの始め方</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="start-project.html#prerequisites">1. 前提を確認する</a>
                   </li>
@@ -114,14 +114,12 @@
                   </li>
                   <li><a href="start-project.html#first-run">5. 初回実行する</a>
                   </li>
-                  <li><a href="start-project.html#commit-targets">6. コミット対象を確認する</a>
-                  </li>
                 </ol>
               </details>
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a></summary>
+                <summary><a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="copy-existing-project.html#copy-or-clone">1. プロジェクトを取得する</a>
                   </li>
@@ -129,11 +127,13 @@
                   </li>
                   <li><a href="copy-existing-project.html#check-python-version">3. Python バージョン指定を確認する</a>
                   </li>
-                  <li><a href="copy-existing-project.html#sync-environment">4. 環境を同期する</a>
+                  <li><a href="copy-existing-project.html#set-project-environment">4. 仮想環境の作成先を設定する</a>
                   </li>
-                  <li><a href="copy-existing-project.html#verify-project">5. 動作確認する</a>
+                  <li><a href="copy-existing-project.html#sync-environment">5. 環境を同期する</a>
                   </li>
-                  <li><a href="copy-existing-project.html#lock-file-policy">6. lock file 更新の扱い</a>
+                  <li><a href="copy-existing-project.html#verify-project">6. 動作確認する</a>
+                  </li>
+                  <li><a href="copy-existing-project.html#lock-file-policy">7. lock file 更新の扱い</a>
                   </li>
                 </ol>
               </details>
@@ -146,21 +146,17 @@
                   </li>
                   <li><a href="migration.html#command-mapping">2. コマンド対応表</a>
                   </li>
-                  <li><a href="migration.html#pre-migration-inventory">3. 事前調査</a>
+                  <li><a href="migration.html#migration-policy">3. 移行方針を決める</a>
                   </li>
-                  <li><a href="migration.html#migration-policy">4. 移行方針を決める</a>
+                  <li><a href="migration.html#local-migration">4. ローカルで移行する</a>
                   </li>
-                  <li><a href="migration.html#local-migration">5. ローカルで移行する</a>
+                  <li><a href="migration.html#pyproject-adjustments">5. pyproject.toml を調整する</a>
                   </li>
-                  <li><a href="migration.html#pyproject-adjustments">6. pyproject.toml を調整する</a>
+                  <li><a href="migration.html#verification">6. 動作確認する</a>
                   </li>
-                  <li><a href="migration.html#verification">7. 動作確認する</a>
+                  <li><a href="migration.html#cleanup">7. Poetry / pyenv 前提を整理する</a>
                   </li>
-                  <li><a href="migration.html#ci-and-docker">8. CI / Docker を更新する</a>
-                  </li>
-                  <li><a href="migration.html#cleanup">9. Poetry / pyenv 前提を整理する</a>
-                  </li>
-                  <li><a href="migration.html#review-checklist">10. レビュー観点</a>
+                  <li><a href="migration.html#review-checklist">8. レビュー観点</a>
                   </li>
                 </ol>
               </details>
@@ -196,13 +192,13 @@
     <main class="content">
       <header class="hero">
         <h1>uv のネットワーク設定の基本</h1>
-        <p>社内 proxy、証明書、private package repository など、uv のネットワーク設定の考え方を整理します。</p>
+        <p>社内 proxy、証明書、社内パッケージリポジトリなど、uv のネットワーク設定の考え方を整理します。</p>
       </header>
 
       <section class="chapter-intro" aria-label="このページの目的">
         <h2>ページ概要</h2>
-        <p>このページの目的は、社内ネットワーク配下で uv を安定して利用するために必要な環境変数と設定の考え方を整理することです。社内 proxy、SSL inspection、社内 CA、private package repository を利用する環境を前提に、<code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code> などの設定方法を説明します。</p>
-        <p>実際の作業手順は、<a href="start-project.html">プロジェクトの始め方</a> と <a href="copy-existing-project.html">既存プロジェクトをコピーして始める方法</a> で改めて記載します。このページでは、各設定が何のためのものか、どこに保存されるか、どの範囲に効くかを押さえます。</p>
+        <p>このページの目的は、社内ネットワーク配下で uv を安定して利用するために必要な環境変数と設定の考え方を整理することです。社内 proxy、SSL inspection、社内 CA、社内パッケージリポジトリを利用する環境を前提に、<code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code> などの設定方法を説明します。</p>
+        <p>実際の作業手順は、<a href="start-project.html">新規 uv プロジェクトの始め方</a> と <a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a> で改めて記載します。このページでは、各設定が何のためのものか、どこに保存されるか、どの範囲に効くかを押さえます。</p>
       </section>
       <section id="proxy-check" data-toc data-toc-title="proxy の確認">
         <h2>1. proxy の確認</h2>
@@ -290,11 +286,11 @@ echo $env:UV_SYSTEM_CERTS</code></pre>
 # 新しい PowerShell を開き、保存された値が反映されていることを確認する
 echo $env:UV_SYSTEM_CERTS</code></pre>
       </section>
-      <section id="private-index" data-toc data-toc-title="private package repository">
-        <h2>5. private package repository</h2>
-        <p>private package repository は、社内で作成した Python パッケージや、社内でミラーした外部パッケージを配布するためのパッケージ置き場です。PyPI ではなく社内の package index から取得する必要があるプロジェクトで使います。</p>
+      <section id="private-index" data-toc data-toc-title="社内パッケージリポジトリ">
+        <h2>5. 社内パッケージリポジトリ</h2>
+        <p>社内パッケージリポジトリは、社内で作成した Python パッケージや、社内でミラーした外部パッケージを配布するためのパッケージ置き場です。PyPI ではなく社内のパッケージリポジトリから取得する必要があるプロジェクトで使います。</p>
         <p>すべてのプロジェクトで設定するものではありません。公開 PyPI から依存パッケージを取得できるプロジェクトや、社内 private package を使わないプロジェクトでは、この設定は不要です。</p>
-        <p>private package repository をプロジェクトごとに固定する場合は、プロジェクトの <code>pyproject.toml</code> に保存します。この設定はリポジトリに含まれるため、レビューと履歴管理の対象になります。</p>
+        <p>社内パッケージリポジトリをプロジェクトごとに固定する場合は、プロジェクトの <code>pyproject.toml</code> に保存します。この設定はリポジトリに含まれるため、レビューと履歴管理の対象になります。</p>
         <div class="code-caption">toml</div>
 <pre class="code-block language-toml"><code class="language-toml">[[tool.uv.index]]
 name = "internal"
@@ -321,7 +317,7 @@ $env:UV_EXCLUDE_NEWER="7 days"
 # 設定された値で lock / sync を実行する
 uv lock
 uv sync</code></pre>
-        <p><code>X=7</code> とする場合は、<code>--exclude-newer "7 days"</code> または <code>UV_EXCLUDE_NEWER="7 days"</code> を指定します。<code>$env:UV_EXCLUDE_NEWER</code> は現在の PowerShell セッションだけに効きます。永続化する場合はユーザー環境変数として保存できますが、lock file 更新の意図が見えにくくなるため、社内標準ではコマンドライン引数またはCIスクリプトで明示します。</p>
+        <p><code>X=7</code> とする場合は、<code>--exclude-newer "7 days"</code> または <code>UV_EXCLUDE_NEWER="7 days"</code> を指定します。<code>$env:UV_EXCLUDE_NEWER</code> は現在の PowerShell セッションだけに効きます。永続化する場合はユーザー環境変数として保存できますが、lock file 更新の意図が見えにくくなるため、社内標準ではコマンドライン引数で明示します。</p>
       </section>
       <nav class="chapter-nav" aria-label="ページ移動"><a class="chapter-nav-link" href="install.html"><span>Previous</span><strong>インストール</strong></a>
 <a class="chapter-nav-link next" href="usage.html"><span>Next</span><strong>基本操作と概念</strong></a></nav>
