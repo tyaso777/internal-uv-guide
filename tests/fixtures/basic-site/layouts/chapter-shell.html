@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="{{DOCUMENT_LANG}}">
+<head>
+<!--
+  Security note:
+  Browser-loaded CDN script and stylesheet assets are pinned with SRI and
+  crossorigin="anonymous". Pyodide is loaded separately inside a Web Worker;
+  see README.md for the importScripts() SRI limitation.
+-->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{DOCUMENT_DESCRIPTION}}">
+  <meta property="og:title" content="{{DOCUMENT_TITLE}}">
+  <meta property="og:description" content="{{DOCUMENT_DESCRIPTION}}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="{{SITE_TITLE}}">
+  <title>{{DOCUMENT_TITLE}}</title>
+
+  <!-- Library config -->
+  <script>
+    window.technicalDocDefaultLayoutMode = "{{DEFAULT_LAYOUT_MODE}}";
+
+    window.Prism = window.Prism || {};
+    window.Prism.manual = true;
+
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: true
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+
+  <!-- External libraries -->
+{{FIXED_HEAD_ASSETS}}
+{{OPTIONAL_HEAD_ASSETS}}
+
+  <link rel="stylesheet" href="{{ASSET_PREFIX}}assets/css/technical-doc.css">
+</head>
+
+<body class="line-numbers document-page">
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <div class="layout">
+    <aside class="sidebar" aria-label="Document navigation">
+      <header class="sidebar-header" aria-labelledby="sidebar-title">
+        <h2 id="sidebar-title" class="sidebar-title">{{SIDEBAR_TITLE}}</h2>
+        <p class="sidebar-subtitle">{{SIDEBAR_SUBTITLE}}</p>
+      </header>
+
+      <details class="nav-section" open>
+        <summary>Contents</summary>
+        <div class="nav-body">
+          <ol class="nav-list site-contents-tree">
+{{CONTENTS_TREE}}
+          </ol>
+        </div>
+      </details>
+
+{{MATERIALS_SECTION}}
+{{EXTERNAL_LINKS_SECTION}}
+    </aside>
+
+    <main id="main" tabindex="-1">
+      <article class="content">
+{{CONTENT}}
+      </article>
+    </main>
+  </div>
+
+  <script defer src="{{ASSET_PREFIX}}assets/js/technical-doc.js"></script>
+</body>
+</html>

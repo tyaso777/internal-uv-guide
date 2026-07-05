@@ -30,7 +30,7 @@ $env:HTTPS_PROXY="http://proxy.example.co.jp:8080"</code></pre>
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/$uvVersion/install.ps1 | iex"</code></pre>
         <aside class="callout callout-warning">
         <div class="callout-label">Warning</div>uv 本体は、社内で確認済みの標準バージョンを社内ポータルやセットアップスクリプトで明示します。</aside>
-        <aside class="callout callout-info">
+        <aside class="callout callout-note">
         <div class="callout-label">Note</div>検証用端末や一時的な確認では、バージョンを指定せずに <code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code> を実行することもできます。社内標準の開発環境では、上記のバージョン指定インストールを使います。</aside>
       </section>
       <section id="verify-install" data-toc data-toc-title="インストール確認">

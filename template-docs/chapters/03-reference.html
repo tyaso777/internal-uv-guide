@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!--
+  Security note:
+  Browser-loaded CDN script and stylesheet assets are pinned with SRI and
+  crossorigin="anonymous". Pyodide is loaded separately inside a Web Worker;
+  see README.md for the importScripts() SRI limitation.
+-->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A technical HTML document template for multi-page documents with code, math, diagrams, tables, and optional Python examples.">
+  <meta property="og:title" content="Chapter 3: Reference Page">
+  <meta property="og:description" content="A technical HTML document template for multi-page documents with code, math, diagrams, tables, and optional Python examples.">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="html-doc-template guide">
+  <title>Chapter 3: Reference Page</title>
+
+  <!-- Library config -->
+  <script>
+    window.technicalDocDefaultLayoutMode = "standard";
+
+    try {
+      const savedLayoutMode = window.localStorage ? window.localStorage.getItem("technicalDocLayoutMode") : null;
+      const initialLayoutMode = savedLayoutMode || window.technicalDocDefaultLayoutMode;
+      if (initialLayoutMode === "wide") {
+        document.documentElement.classList.add("layout-wide");
+      }
+    } catch (error) {
+      document.documentElement.classList.remove("layout-wide");
+    }
+
+    window.Prism = window.Prism || {};
+    window.Prism.manual = true;
+
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: true
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+
+  <!-- External libraries -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.css" integrity="sha512-cbQXwDFK7lj2Fqfkuxbo5iD1dSbLlJGXGpfTDqbggqjHJeyzx88I3rfwjS38WJag/ihH7lzuGlGHpDBymLirZQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/prism.min.js" integrity="sha512-HiD3V4nv8fcjtouznjT9TqDNDm1EXngV331YGbfVGeKUoH+OLkRTCMzA34ecjlgSQZpdHZupdSrqHY+Hz3l6uQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-python.min.js" integrity="sha512-AKaNmg8COK0zEbjTdMHJAPJ0z6VeNqvRvH4/d5M4sHJbQQUToMBtodq4HaV4fa+WV2UTfoperElm66c9/8cKmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-powershell.min.js" integrity="sha512-mNRS5mGSidY0juPNlXC17z6atUusuE8Fdbu5+zK6drBDbroYeaEfudGKSRoFvRpzseJq2v3bNOwpEFHi6L82Aw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-java.min.js" integrity="sha512-xKcnbsdT0KMoA4yrozkqZM1XJVTrPsjdQwvigxlAlxEDu8YDvC/jl+LfVqn0fY3Vs6m2y4a89JCHEIA/Z9zpmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-sql.min.js" integrity="sha512-sijCOJblSCXYYmXdwvqV0tak8QJW5iy2yLB1wAbbLc3OOIueqymizRFWUS/mwKctnzPKpNdPJV3aK1zlDMJmXQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-mermaid.min.js" integrity="sha512-TWvtkke2tZtIQOA5/sjGM0S2RCMLTxhLKh0zYvhHdhVQizOaPcF9uYa+szt+kun01TCUVALUcVxlta8fjwt1jQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.js" integrity="sha512-BttltKXFyWnGZQcRWj6osIg7lbizJchuAMotOkdLxHxwt/Hyo+cl47bZU0QADg+Qt5DJwni3SbYGXeGMB5cBcw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" integrity="sha256-1CldwzdEg2k1wTmf7s5RWVd7NMXI/7nxxjJM2C4DqII=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js" integrity="sha512-OeZ4Yrb/W7d2W4rAMOO0HQ9Ro/aWLtpW9BUSR2UOWnSV2hprXLkkYnnCGc9NeLUxxE4ZG7zN16UuT1Elqq8Opg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js" integrity="sha512-Vs2GKxnxnTQBRW7o2xXZ9A28njjmu5RToS42efiKNEWmikov0inZY522EtGVK5CcVo0M/FQwmXsTfl9skgRnvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+  <link rel="stylesheet" href="../../assets/css/technical-doc.css">
+</head>
+
+<body class="line-numbers document-page">
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <div class="layout">
+    <aside class="sidebar" aria-label="Document navigation">
+      <header class="sidebar-header" aria-labelledby="sidebar-title">
+        <h2 id="sidebar-title" class="sidebar-title">Chapter 3<br>Reference Page</h2>
+        <p class="sidebar-subtitle">Multi-page example</p>
+      </header>
+
+      <details class="nav-section" open>
+        <summary>Contents</summary>
+        <div class="nav-body">
+          <ol class="nav-list site-contents-tree">
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="01-introduction.html">Chapter 1: Introduction</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="01-introduction.html#overview">1. Overview</a>
+                  </li>
+                  <li><a href="01-introduction.html#template-guide">2. Template Usage</a>
+                  </li>
+                  <li><a href="01-introduction.html#formula-examples">3. Math Examples</a>
+                    <ol>
+                      <li><a href="01-introduction.html#inline-formula-example">3.1. Inline Math</a></li>
+                      <li><a href="01-introduction.html#display-formula-example">3.2. Display Math</a></li>
+                    </ol>
+                  </li>
+                  <li><a href="01-introduction.html#python-code-examples">4. Python Code Display and Execution</a>
+                    <ol>
+                      <li><a href="01-introduction.html#python-code-display-example">4.1. Python Code Block</a></li>
+                      <li><a href="01-introduction.html#python-runner-example">4.2. Executable Code Example</a></li>
+                    </ol>
+                  </li>
+                  <li><a href="01-introduction.html#other-language-examples">5. Other Languages</a>
+                    <ol>
+                      <li><a href="01-introduction.html#powershell-code-example">5.1. PowerShell Code Block</a></li>
+                      <li><a href="01-introduction.html#sql-code-example">5.2. SQL Code Block</a></li>
+                    </ol>
+                  </li>
+                  <li><a href="01-introduction.html#mermaid">6. Mermaid Diagrams</a>
+                  </li>
+                  <li><a href="01-introduction.html#vega-lite">7. Vega-Lite Charts</a>
+                  </li>
+                  <li><a href="01-introduction.html#table-examples">8. Table Examples</a>
+                    <ol>
+                      <li><a href="01-introduction.html#standard-table-example">8.1. Standard Table</a></li>
+                      <li><a href="01-introduction.html#wide-table-example">8.2. Wide Table</a></li>
+                      <li><a href="01-introduction.html#scrollable-table-example">8.3. Fixed-Height Table</a></li>
+                      <li><a href="01-introduction.html#indexed-table-example">8.4. Indexed Table</a></li>
+                      <li><a href="01-introduction.html#compact-table-example">8.5. Compact Table</a></li>
+                    </ol>
+                  </li>
+                  <li><a href="01-introduction.html#notes">9. Operational Notes</a>
+                  </li>
+                  <li><a href="01-introduction.html#changelog">10. Changelog</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details>
+                <summary><a href="02-examples.html">Chapter 2: Minimal Page</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="02-examples.html#purpose">1. Purpose</a>
+                  </li>
+                  <li><a href="02-examples.html#minimal-components">2. Minimal Components</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+            <li class="site-contents-chapter">
+              <details open>
+                <summary><a href="03-reference.html" aria-current="page">Chapter 3: Reference Page</a></summary>
+                <ol class="toc-tree toc-tree-numbered">
+                  <li><a href="03-reference.html#purpose">1. Purpose</a>
+                  </li>
+                  <li><a href="03-reference.html#reference-note">2. Reference Note</a>
+                  </li>
+                </ol>
+              </details>
+            </li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="nav-section layout-mode-section" open>
+        <summary>Layout</summary>
+        <div class="nav-body">
+          <fieldset class="layout-mode-control" aria-label="Layout width">
+            <label>
+              <input type="radio" name="layout-mode" value="standard" checked>
+              <span>Standard</span>
+            </label>
+            <label>
+              <input type="radio" name="layout-mode" value="wide">
+              <span>Wide</span>
+            </label>
+          </fieldset>
+        </div>
+      </details>
+
+      <details class="nav-section">
+        <summary>Materials</summary>
+        <div class="nav-body">
+          <ol class="nav-list">
+              <li>
+                <span class="nav-list-category">Project</span>
+                <ol>
+                  <li><a href="../../index.html">Project index</a></li>
+                  <li><a href="../../README.md">Repository README</a></li>
+                </ol>
+              </li>
+          </ol>
+        </div>
+      </details>
+      <details class="nav-section">
+        <summary>External Links</summary>
+        <div class="nav-body">
+          <ol class="nav-list">
+              <li>
+                <span class="nav-list-category">Rendering</span>
+                <ol>
+                  <li><a href="https://prismjs.com/" target="_blank" rel="noopener">Prism.js</a></li>
+                  <li><a href="https://www.mathjax.org/" target="_blank" rel="noopener">MathJax</a></li>
+                  <li><a href="https://mermaid.js.org/" target="_blank" rel="noopener">Mermaid</a></li>
+                  <li><a href="https://vega.github.io/vega-lite/" target="_blank" rel="noopener">Vega-Lite</a></li>
+                </ol>
+              </li>
+              <li>
+                <span class="nav-list-category">Python runtime</span>
+                <ol>
+                  <li><a href="https://pyodide.org/" target="_blank" rel="noopener">Pyodide</a></li>
+                </ol>
+              </li>
+          </ol>
+        </div>
+      </details>
+    </aside>
+
+    <main id="main" tabindex="-1">
+      <article class="content">
+        <header class="hero">
+          <h1>Chapter 3: Reference Page</h1>
+          <p>
+            A compact third chapter used to verify longer chapter sequences and generated navigation.
+          </p>
+        </header>
+
+        <section class="document-info" aria-labelledby="document-info-title">
+          <h2 id="document-info-title">Document Information</h2>
+          <dl class="metadata" aria-label="Document metadata">
+            <div>
+              <dt>Version</dt>
+              <dd>0.1.0</dd>
+            </div>
+            <div>
+              <dt>Last updated</dt>
+              <dd>2026-04-25</dd>
+            </div>
+            <div>
+              <dt>Author</dt>
+              <dd>Atsushi Suzuki</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section id="purpose" data-toc data-toc-title="Purpose">
+          <h2>1. Purpose</h2>
+          <p>
+            This page confirms that the build script can generate a three-chapter sequence from the manifest.
+            It is intentionally small so Chapter 1 remains the primary component reference.
+          </p>
+
+          <aside class="callout callout-note">
+            <div class="callout-label">Note</div>
+            <p>
+              Add more chapters by creating a new fragment under <code>chapters-src/</code> and adding it to <code>chapters-src/site-manifest.json</code>.
+            </p>
+          </aside>
+        </section>
+
+        <section id="reference-note" data-toc data-toc-title="Reference Note">
+          <h2>2. Reference Note</h2>
+          <div class="card card-compact">
+            <h3>Manifest-driven Navigation</h3>
+            <p>
+              The left-side Contents tree and previous/next links are generated from the chapter order in the manifest.
+            </p>
+          </div>
+        </section>
+
+        <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation">
+          <a class="chapter-nav-link previous" href="02-examples.html">
+            <span>Previous</span>
+            <strong>Chapter 2: Minimal Page</strong>
+          </a>
+        </nav>
+
+        <footer class="footer">
+          Minimal generated chapter for three-page workflow checks.
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <script defer src="../../assets/js/technical-doc.js"></script>
+</body>
+</html>
