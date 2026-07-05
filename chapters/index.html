@@ -9,12 +9,12 @@
 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="uv を使って新規 Python プロジェクトを作成し、初回実行できる状態にする流れを示します。">
-  <meta property="og:title" content="新規 uv プロジェクトの始め方">
-  <meta property="og:description" content="uv を使って新規 Python プロジェクトを作成し、初回実行できる状態にする流れを示します。">
+  <meta name="description" content="社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。">
+  <meta property="og:title" content="社内で uv を使うための導入・移行・運用ガイド">
+  <meta property="og:description" content="社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="社内 uv 利用ガイド">
-  <title>新規 uv プロジェクトの始め方</title>
+  <title>社内で uv を使うための導入・移行・運用ガイド</title>
 
   <!-- Library config -->
   <script>
@@ -61,7 +61,7 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js" integrity="sha512-Vs2GKxnxnTQBRW7o2xXZ9A28njjmu5RToS42efiKNEWmikov0inZY522EtGVK5CcVo0M/FQwmXsTfl9skgRnvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 
-  <link rel="stylesheet" href="assets/css/technical-doc.css">
+  <link rel="stylesheet" href="../assets/css/technical-doc.css">
 </head>
 
 <body class="line-numbers document-page">
@@ -70,7 +70,7 @@
   <div class="layout">
     <aside class="sidebar" aria-label="Document navigation">
       <header class="sidebar-header" aria-labelledby="sidebar-title">
-        <h2 id="sidebar-title" class="sidebar-title">新規 uv プロジェクトの始め方</h2>
+        <h2 id="sidebar-title" class="sidebar-title">概要</h2>
         <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順</p>
       </header>
 
@@ -79,8 +79,8 @@
         <div class="nav-body">
           <ol class="nav-list site-contents-tree">
             <li class="site-contents-chapter">
-              <details>
-                <summary><a href="index.html">社内で uv を使うための導入・移行・運用ガイド</a></summary>
+              <details open>
+                <summary><a href="index.html" aria-current="page">社内で uv を使うための導入・移行・運用ガイド</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="index.html#purpose">1. 目的</a>
                   </li>
@@ -160,8 +160,8 @@
               </details>
             </li>
             <li class="site-contents-chapter">
-              <details open>
-                <summary><a href="start-project.html" aria-current="page">新規 uv プロジェクトの始め方</a></summary>
+              <details>
+                <summary><a href="start-project.html">新規 uv プロジェクトの始め方</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="start-project.html#prerequisites">1. 前提を確認する</a>
                   </li>
@@ -262,103 +262,54 @@
     <main id="main" tabindex="-1">
       <article class="content">
         <header class="hero">
-                <h1>新規 uv プロジェクトの始め方</h1>
-                <p>uv を使って新規 Python プロジェクトを作成し、初回実行できる状態にする流れを示します。</p>
+                <h1>社内で uv を使うための導入・移行・運用ガイド</h1>
+                <p>社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。</p>
               </header>
 
-              <section class="chapter-intro" aria-label="このページの目的">
-                <h2>ページ概要</h2>
-                <p>このページの目的は、uv を使って新規 Python プロジェクトを作成し、Python バージョン固定、依存追加、lock file 作成、初回実行まで進めることです。社内ネットワーク配下では、必要に応じて proxy と証明書設定を行ってから作業します。</p>
+              <section id="purpose" data-toc data-toc-title="目的">
+                <h2>1. 目的</h2>
+                <p>このガイドは、社内の Python 開発環境を uv ベースで導入・移行・運用するための標準手順をまとめたものです。Windows 端末、社内 proxy、社内 CA、社内パッケージリポジトリを利用する環境を主な対象にしています。</p>
+                <p>開発者が同じ手順で Python、仮想環境、依存関係、lock file、監査コマンドを扱えるようにし、ローカル環境の差分を小さくすることを目的とします。</p>
               </section>
-              <section id="prerequisites" data-toc data-toc-title="前提を確認する">
-                <h2>1. 前提を確認する</h2>
+              <section id="target-readers" data-toc data-toc-title="対象読者">
+                <h2>2. 対象読者</h2>
                 <ul>
-                  <li>uv がインストール済みであること。</li>
-                  <li>社内 proxy や SSL inspection が必要な端末では、ネットワーク設定を行えること。</li>
-                  <li>プロジェクトで利用する Python バージョンが決まっていること。</li>
+                  <li>Python プロジェクトを新規に作成する開発者</li>
+                  <li><code>pyenv + Poetry</code> 構成の既存プロジェクトを uv へ移行する担当者</li>
+                  <li>社内 proxy、証明書、社内パッケージリポジトリを整備する担当者</li>
+                  <li>依存パッケージの脆弱性監査やライセンス確認を運用する担当者</li>
                 </ul>
               </section>
-              <section id="network-session-settings" data-toc data-toc-title="ネットワーク設定を適用する">
-                <h2>2. ネットワーク設定を適用する</h2>
-                <p>この PowerShell セッションだけで作業する場合は、proxy と証明書設定をセッションに設定してから uv コマンドを実行します。</p>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell"># proxy をこの PowerShell セッションに設定する
-$env:HTTP_PROXY="http://proxy.example.co.jp:8080"
-$env:HTTPS_PROXY="http://proxy.example.co.jp:8080"
-
-# OS の証明書ストアをこの PowerShell セッションで利用する
-$env:UV_SYSTEM_CERTS="1"
-
-# 設定された値を確認する
-echo $env:HTTP_PROXY
-echo $env:HTTPS_PROXY
-echo $env:UV_SYSTEM_CERTS</code></pre>
+              <section id="guide-map" data-toc data-toc-title="ガイド構成">
+                <h2>3. ガイド構成</h2>
+                <div class="table-wrap"><table><thead><tr><th>ページ</th><th>主な内容</th><th>読むタイミング</th></tr></thead><tbody><tr><td><a href="install.html">インストール</a></td><td>proxy 配下での導入、uv バージョン固定、導入確認</td><td>初回導入時</td></tr>
+        <tr><td><a href="setup.html">ネットワーク設定の基本</a></td><td><code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code>、社内パッケージリポジトリ、依存解決の考え方</td><td>初回導入時、SSL エラー対応時</td></tr>
+        <tr><td><a href="usage.html">基本操作と概念</a></td><td>プロジェクト、仮想環境、lock、sync、tool、pip 互換</td><td>日常開発</td></tr>
+        <tr><td><a href="start-project.html">新規 uv プロジェクトの始め方</a></td><td>新規プロジェクト作成、Python バージョン固定、初回依存追加、初回実行</td><td>新規開発開始時</td></tr>
+        <tr><td><a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a></td><td>clone / コピー後の同期、既存 lock file の利用、動作確認</td><td>既存 uv プロジェクト利用時</td></tr>
+        <tr><td><a href="migration.html">Poetry + pyenv からの移行</a></td><td>対応表、移行手順、互換でない点</td><td>既存プロジェクト移行時</td></tr>
+        <tr><td><a href="security.html">セキュリティ運用</a></td><td><code>pip-audit</code>、<code>pip-licenses</code>、依存追加時チェック</td><td>標準化、監査、リリース前</td></tr></tbody></table></div>
               </section>
-              <section id="create-project" data-toc data-toc-title="プロジェクトを作成する">
-                <h2>3. プロジェクトを作成する</h2>
-                <p><code>uv init フォルダ名</code> を実行すると、現在のフォルダの下に新しいプロジェクトフォルダが作成されます。<code>$projectName</code> には実際のプロジェクト名を設定します。<code>C:&#92;path&#92;to&#92;your&#92;project-parent-folder</code> は例であり、プロジェクトを配置する親フォルダのパスに置き換えます。</p>
-                <p>共有フォルダ上で作業する場合は、<code>uv add</code> や <code>uv sync</code> の前に <code>UV_PROJECT_ENVIRONMENT</code> を設定します。仮想環境名をプロジェクト名だけで決めると、別の場所にある同名プロジェクトと衝突する可能性があるため、プロジェクトの保存場所から作った短いハッシュを末尾に付けます。</p>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell"># プロジェクト名を設定する
-$projectName="my-app"
-
-# プロジェクトを配置する親フォルダへ移動する
-cd C:\path\to\your\project-parent-folder
-
-# 現在のフォルダの下にプロジェクトを作成する
-uv init $projectName
-
-# 作成されたプロジェクトフォルダへ移動する
-cd $projectName
-
-# 同じプロジェクト名の仮想環境と衝突しないように、
-# プロジェクトの保存場所をもとに短いハッシュを作る
-$projectRoot=(Resolve-Path .).Path.ToLowerInvariant()
-$sha256=[System.Security.Cryptography.SHA256]::Create()
-$hashBytes=$sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($projectRoot))
-$hash=([System.BitConverter]::ToString($hashBytes) -replace "-", "").Substring(0,8).ToLowerInvariant()
-
-# 仮想環境の作成先を、このプロジェクト用のローカルフォルダに設定する
-$env:UV_PROJECT_ENVIRONMENT="$env:USERPROFILE\.uv\venvs\$projectName-$hash"
-
-# 設定された仮想環境の場所を確認する
-echo $env:UV_PROJECT_ENVIRONMENT
-
-# プロジェクトで使う Python バージョンを固定する
-uv python pin 3.12</code></pre>
-                <p>以下のコマンドは、プロジェクト内のファイルや仮想環境を作成・更新します。レビュー時は、どのファイルが作成され、どのファイルが更新されたかを確認します。</p>
-                <div class="table-wrap"><table><thead><tr><th>コマンド</th><th>起きること</th><th>作成されるもの</th><th>更新されるもの</th></tr></thead><tbody><tr><td><code>uv init $projectName</code></td><td>現在のフォルダの下に <code>$projectName</code> で指定したプロジェクトを作成する。</td><td>プロジェクトフォルダ、<code>pyproject.toml</code>、<code>README.md</code>、サンプルコードなど。</td><td>通常は既存ファイルを更新しない。既存フォルダを指定する場合は内容を確認する。</td></tr>
-        <tr><td><code>uv python pin 3.12</code></td><td>このプロジェクトで使う Python バージョンを指定する。</td><td><code>.python-version</code> が無い場合は作成する。</td><td>既に <code>.python-version</code> がある場合は更新する。</td></tr>
-        <tr><td><code>uv add requests</code></td><td><code>requests</code> を依存関係に追加し、依存解決を行う。</td><td><code>uv.lock</code> が無い場合は作成する。必要に応じて <code>.venv</code> を作成する。</td><td><code>pyproject.toml</code> と <code>uv.lock</code> を更新する。既に <code>.venv</code> がある場合は環境も更新する。</td></tr></tbody></table></div>
-              </section>
-              <section id="add-dependencies" data-toc data-toc-title="依存関係を追加する">
-                <h2>4. 依存関係を追加する</h2>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell">uv add requests
-uv add --dev pytest ruff</code></pre>
-              </section>
-              <section id="first-run" data-toc data-toc-title="初回実行する">
-                <h2>5. 初回実行する</h2>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell">uv lock
-uv sync
-uv run python --version
-uv run pytest</code></pre>
+              <section id="operational-assumptions" data-toc data-toc-title="運用上の前提">
+                <h2>4. 運用上の前提</h2>
+                <ul>
+                  <li>uv 本体は、社内で確認済みの標準バージョンを利用します。</li>
+                  <li>プロジェクトの Python バージョンは <code>.python-version</code> と <code>pyproject.toml</code> で明示します。</li>
+                  <li>社内 proxy と証明書設定は、ユーザー環境変数で管理します。</li>
+                  <li>依存パッケージの解決では、必要に応じて <code>--exclude-newer "X days"</code> を使い、公開直後のパッケージを避けます。</li>
+                  <li>脆弱性監査とライセンス監査は、ローカルで実行できる形にします。</li>
+                </ul>
               </section>
               <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation">
-                <a class="chapter-nav-link previous" href="usage.html">
-                  <span>Previous</span>
-                  <strong>uv の基本操作と概念</strong>
-                </a>
-                <a class="chapter-nav-link next" href="copy-existing-project.html">
+                <a class="chapter-nav-link next" href="install.html">
                   <span>Next</span>
-                  <strong>clone・コピーした uv プロジェクトの始め方</strong>
+                  <strong>uv のインストール</strong>
                 </a>
               </nav>
       </article>
     </main>
   </div>
 
-  <script defer src="assets/js/technical-doc.js"></script>
+  <script defer src="../assets/js/technical-doc.js"></script>
 </body>
 </html>

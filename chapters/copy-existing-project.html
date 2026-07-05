@@ -9,12 +9,12 @@
 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="社内 proxy、証明書、社内パッケージリポジトリなど、uv のネットワーク設定の考え方を整理します。">
-  <meta property="og:title" content="uv のネットワーク設定の基本">
-  <meta property="og:description" content="社内 proxy、証明書、社内パッケージリポジトリなど、uv のネットワーク設定の考え方を整理します。">
+  <meta name="description" content="uv 対応済みの既存プロジェクトを取得し、lock file を尊重して手元で動かす流れを示します。">
+  <meta property="og:title" content="clone・コピーした uv プロジェクトの始め方">
+  <meta property="og:description" content="uv 対応済みの既存プロジェクトを取得し、lock file を尊重して手元で動かす流れを示します。">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="社内 uv 利用ガイド">
-  <title>uv のネットワーク設定の基本</title>
+  <title>clone・コピーした uv プロジェクトの始め方</title>
 
   <!-- Library config -->
   <script>
@@ -61,7 +61,7 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js" integrity="sha512-Vs2GKxnxnTQBRW7o2xXZ9A28njjmu5RToS42efiKNEWmikov0inZY522EtGVK5CcVo0M/FQwmXsTfl9skgRnvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 
-  <link rel="stylesheet" href="assets/css/technical-doc.css">
+  <link rel="stylesheet" href="../assets/css/technical-doc.css">
 </head>
 
 <body class="line-numbers document-page">
@@ -70,7 +70,7 @@
   <div class="layout">
     <aside class="sidebar" aria-label="Document navigation">
       <header class="sidebar-header" aria-labelledby="sidebar-title">
-        <h2 id="sidebar-title" class="sidebar-title">ネットワーク設定の基本</h2>
+        <h2 id="sidebar-title" class="sidebar-title">clone・コピーした uv プロジェクトの始め方</h2>
         <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順</p>
       </header>
 
@@ -109,8 +109,8 @@
               </details>
             </li>
             <li class="site-contents-chapter">
-              <details open>
-                <summary><a href="setup.html" aria-current="page">uv のネットワーク設定の基本</a></summary>
+              <details>
+                <summary><a href="setup.html">uv のネットワーク設定の基本</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="setup.html#proxy-check">1. proxy の確認</a>
                   </li>
@@ -177,8 +177,8 @@
               </details>
             </li>
             <li class="site-contents-chapter">
-              <details>
-                <summary><a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a></summary>
+              <details open>
+                <summary><a href="copy-existing-project.html" aria-current="page">clone・コピーした uv プロジェクトの始め方</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="copy-existing-project.html#copy-or-clone">1. プロジェクトを取得する</a>
                   </li>
@@ -262,149 +262,98 @@
     <main id="main" tabindex="-1">
       <article class="content">
         <header class="hero">
-                <h1>uv のネットワーク設定の基本</h1>
-                <p>社内 proxy、証明書、社内パッケージリポジトリなど、uv のネットワーク設定の考え方を整理します。</p>
+                <h1>clone・コピーした uv プロジェクトの始め方</h1>
+                <p>uv 対応済みの既存プロジェクトを取得し、lock file を尊重して手元で動かす流れを示します。</p>
               </header>
 
               <section class="chapter-intro" aria-label="このページの目的">
                 <h2>ページ概要</h2>
-                <p>このページの目的は、社内ネットワーク配下で uv を安定して利用するために必要な環境変数と設定の考え方を整理することです。社内 proxy、SSL inspection、社内 CA、社内パッケージリポジトリを利用する環境を前提に、<code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code> などの設定方法を説明します。</p>
-                <p>実際の作業手順は、<a href="start-project.html">新規 uv プロジェクトの始め方</a> と <a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a> で改めて記載します。このページでは、各設定が何のためのものか、どこに保存されるか、どの範囲に効くかを押さえます。</p>
+                <p>このページの目的は、uv 対応済みの既存プロジェクトを clone またはコピーし、手元の端末で同期して動作確認することです。既存の <code>uv.lock</code> を尊重し、意図しない依存更新を避けながら環境を再現します。</p>
               </section>
-              <section id="proxy-check" data-toc data-toc-title="proxy の確認">
-                <h2>1. proxy の確認</h2>
-                <p>Windows 端末で OS 側に設定されている WinHTTP proxy を確認します。このコマンドは設定を変更せず、現在の端末設定を表示するだけです。</p>
+              <section id="copy-or-clone" data-toc data-toc-title="プロジェクトを取得する">
+                <h2>1. プロジェクトを取得する</h2>
                 <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell">netsh winhttp show proxy</code></pre>
-              </section>
-              <section id="setting-scope" data-toc data-toc-title="設定の有効範囲">
-                <h2>2. 設定の有効範囲</h2>
-                <p>uv に渡す設定は、どこに保存するかで有効範囲が変わります。トラブル時に原因を追えるよう、手順書やセットアップスクリプトでは「このセッションだけ」なのか「永続設定」なのかを明示します。</p>
-                <p>設定方法には、PowerShell でコマンドとして実行するものと、設定ファイルに記載するものがあります。下表では、設定方法欄の先頭にどちらの操作かを示します。</p>
-                <div class="table-wrap"><table>
-                  <thead>
-                    <tr>
-                      <th style="width: 12rem;">設定方法</th>
-                      <th>有効範囲</th>
-                      <th>保存場所</th>
-                      <th>確認方法</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><strong>PowerShell で一時設定</strong><br><code>$env:<wbr>NAME="VALUE"</code></td>
-                      <td>現在の PowerShell セッションのみ</td>
-                      <td>現在のプロセス環境。PowerShell を閉じると消える。</td>
-                      <td><code>echo $env:<wbr>NAME</code></td>
-                    </tr>
-                    <tr>
-                      <td><strong>PowerShell で永続設定</strong><br><code>[Environment]::<wbr>SetEnvironmentVariable("NAME", "VALUE", "User")</code></td>
-                      <td>現在の Windows ユーザーで永続</td>
-                      <td>Windows のユーザー環境変数。新しく開いた PowerShell から反映される。</td>
-                      <td><code>[Environment]::<wbr>GetEnvironmentVariable("NAME", "User")</code></td>
-                    </tr>
-                    <tr>
-                      <td><strong>プロジェクト設定ファイルに記載</strong><br><code>pyproject.toml</code> の <code>[tool.uv]</code></td>
-                      <td>そのプロジェクト配下</td>
-                      <td>プロジェクトの <code>pyproject.toml</code></td>
-                      <td>ファイルをレビューする</td>
-                    </tr>
-                    <tr>
-                      <td><strong>uv 設定ファイルに記載</strong><br><code>uv.toml</code></td>
-                      <td>配置場所に応じてプロジェクト / ユーザー / システム</td>
-                      <td>プロジェクトの <code>uv.toml</code>、または Windows では <code>%APPDATA%&#92;<wbr>uv&#92;<wbr>uv.toml</code></td>
-                      <td>ファイルをレビューする</td>
-                    </tr>
-                  </tbody>
-                </table></div>
+        <pre class="code-block language-powershell"><code class="language-powershell">git clone https://github.com/example/my-app.git
+cd my-app</code></pre>
                 <aside class="callout callout-info">
-                <div class="callout-label">Note</div>同じ設定が複数箇所にある場合、コマンドライン引数、環境変数、永続設定ファイルの順に優先されます。検証時は一時的な <code>$env:</code> 設定が残っていないか確認します。</aside>
+                <div class="callout-label">Note</div>フォルダをコピーして始める場合も、<code>.venv</code> はコピーせず、手元で <code>uv sync</code> により再生成します。</aside>
               </section>
-              <section id="proxy-env-vars" data-toc data-toc-title="proxy 環境変数">
-                <h2>3. proxy 環境変数</h2>
-                <p>この PowerShell セッションだけで試す場合は、<code>$env:HTTP_PROXY</code> と <code>$env:HTTPS_PROXY</code> を設定します。値は PowerShell を閉じると消えます。</p>
+              <section id="network-session-settings" data-toc data-toc-title="ネットワーク設定を適用する">
+                <h2>2. ネットワーク設定を適用する</h2>
+                <p>依存パッケージ取得時に社内 proxy や社内 CA が必要な場合は、同期前にこの PowerShell セッションへ設定します。</p>
                 <div class="code-caption">powershell</div>
         <pre class="code-block language-powershell"><code class="language-powershell"># proxy をこの PowerShell セッションに設定する
 $env:HTTP_PROXY="http://proxy.example.co.jp:8080"
 $env:HTTPS_PROXY="http://proxy.example.co.jp:8080"
 
-# 設定された proxy を確認する
-echo $env:HTTP_PROXY
-echo $env:HTTPS_PROXY</code></pre>
-                <p>次回以降の PowerShell でも使う場合は、Windows のユーザー環境変数として保存します。保存後、既に開いている PowerShell には自動反映されないため、新しい PowerShell を開いて確認します。</p>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell"># proxy を Windows のユーザー環境変数として保存する
-[Environment]::SetEnvironmentVariable("HTTP_PROXY", "http://proxy.example.co.jp:8080", "User")
-[Environment]::SetEnvironmentVariable("HTTPS_PROXY", "http://proxy.example.co.jp:8080", "User")
-
-# 新しい PowerShell を開き、保存された proxy が反映されていることを確認する
-echo $env:HTTP_PROXY
-echo $env:HTTPS_PROXY</code></pre>
-              </section>
-              <section id="system-certs" data-toc data-toc-title="社内 CA / SSL inspection">
-                <h2>4. 社内 CA / SSL inspection</h2>
-                <p>社内 proxy が TLS 通信を検査している場合、OS の証明書ストアに入っている社内ルート CA を uv に利用させます。まずは現在の PowerShell セッションだけで有効化して、通信できるか確認します。</p>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell"># OS の証明書ストアをこの PowerShell セッションで利用する
+# OS の証明書ストアをこの PowerShell セッションで利用する
 $env:UV_SYSTEM_CERTS="1"
 
 # 設定された値を確認する
-echo $env:UV_SYSTEM_CERTS</code></pre>
-                <p>継続して必要な端末では、Windows のユーザー環境変数として永続化します。保存場所は Windows のユーザー環境変数です。</p>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell"># OS の証明書ストアを使う設定を Windows のユーザー環境変数として保存する
-[Environment]::SetEnvironmentVariable("UV_SYSTEM_CERTS", "1", "User")
-
-# 新しい PowerShell を開き、保存された値が反映されていることを確認する
+echo $env:HTTP_PROXY
+echo $env:HTTPS_PROXY
 echo $env:UV_SYSTEM_CERTS</code></pre>
               </section>
-              <section id="private-index" data-toc data-toc-title="社内パッケージリポジトリ">
-                <h2>5. 社内パッケージリポジトリ</h2>
-                <p>社内パッケージリポジトリは、社内で作成した Python パッケージや、社内でミラーした外部パッケージを配布するためのパッケージ置き場です。PyPI ではなく社内のパッケージリポジトリから取得する必要があるプロジェクトで使います。</p>
-                <p>すべてのプロジェクトで設定するものではありません。公開 PyPI から依存パッケージを取得できるプロジェクトや、社内 private package を使わないプロジェクトでは、この設定は不要です。</p>
-                <p>社内パッケージリポジトリをプロジェクトごとに固定する場合は、プロジェクトの <code>pyproject.toml</code> に保存します。この設定はリポジトリに含まれるため、レビューと履歴管理の対象になります。</p>
-                <div class="code-caption">toml</div>
-        <pre class="code-block language-toml"><code class="language-toml">[[tool.uv.index]]
-name = "internal"
-url = "https://packages.example.co.jp/simple"
-default = true</code></pre>
-                <p>端末全体の既定値として保存する場合は、Windows では <code>%APPDATA%\uv\uv.toml</code> を使います。ユーザー設定に入れると、複数プロジェクトへ影響するため、社内標準として配布する設定だけにします。</p>
-                <div class="code-caption">toml</div>
-        <pre class="code-block language-toml"><code class="language-toml">[[index]]
-name = "internal"
-url = "https://packages.example.co.jp/simple"
-default = true</code></pre>
-              </section>
-              <section id="exclude-newer" data-toc data-toc-title="新しすぎるリリースを避ける">
-                <h2>6. 新しすぎるリリースを避ける</h2>
-                <p>依存パッケージの公開直後は、破損した wheel、差し戻し、悪意あるパッケージ混入、社内 mirror への反映遅延が起きる可能性があります。</p>
+              <section id="check-python-version" data-toc data-toc-title="Python バージョン指定を確認する">
+                <h2>3. Python バージョン指定を確認する</h2>
+                <p><code>.python-version</code> と <code>pyproject.toml</code> の <code>requires-python</code> を確認し、プロジェクトが想定する Python バージョンで同期します。</p>
                 <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell"># コマンド実行時に、直近 7 日以内に公開された依存パッケージを避ける
-uv lock --exclude-newer "7 days"
-uv sync --exclude-newer "7 days"
+        <pre class="code-block language-powershell"><code class="language-powershell">Get-Content .python-version
+Select-String -Path pyproject.toml -Pattern "requires-python"</code></pre>
+              </section>
+              <section id="set-project-environment" data-toc data-toc-title="仮想環境の作成先を設定する">
+                <h2>4. 仮想環境の作成先を設定する</h2>
+                <p>共有フォルダ上で作業する場合は、<code>uv sync</code> の前に <code>UV_PROJECT_ENVIRONMENT</code> を設定します。clone またはコピーしたプロジェクトでは、現在いるプロジェクトフォルダ名と保存場所から、このプロジェクト用の仮想環境パスを作ります。</p>
+                <div class="code-caption">powershell</div>
+        <pre class="code-block language-powershell"><code class="language-powershell"># プロジェクトフォルダの絶対パスを取得する
+$projectRoot=(Resolve-Path .).Path
 
-# この PowerShell セッションの既定値として設定する
-$env:UV_EXCLUDE_NEWER="7 days"
+# プロジェクト名を現在のフォルダ名から取得する
+$projectName=Split-Path -Leaf $projectRoot
 
-# 設定された値で lock / sync を実行する
-uv lock
-uv sync</code></pre>
-                <p><code>X=7</code> とする場合は、<code>--exclude-newer "7 days"</code> または <code>UV_EXCLUDE_NEWER="7 days"</code> を指定します。<code>$env:UV_EXCLUDE_NEWER</code> は現在の PowerShell セッションだけに効きます。永続化する場合はユーザー環境変数として保存できますが、lock file 更新の意図が見えにくくなるため、社内標準ではコマンドライン引数で明示します。</p>
+# 同じプロジェクト名の仮想環境と衝突しないように、
+# プロジェクトの保存場所をもとに短いハッシュを作る
+$normalizedProjectRoot=$projectRoot.ToLowerInvariant()
+$sha256=[System.Security.Cryptography.SHA256]::Create()
+$hashBytes=$sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($normalizedProjectRoot))
+$hash=([System.BitConverter]::ToString($hashBytes) -replace "-", "").Substring(0,8).ToLowerInvariant()
+
+# 仮想環境の作成先を、このプロジェクト用のローカルフォルダに設定する
+$env:UV_PROJECT_ENVIRONMENT="$env:USERPROFILE\.uv\venvs\$projectName-$hash"
+
+# 設定された仮想環境の場所を確認する
+echo $env:UV_PROJECT_ENVIRONMENT</code></pre>
+              </section>
+              <section id="sync-environment" data-toc data-toc-title="環境を同期する">
+                <h2>5. 環境を同期する</h2>
+                <p>既存の lock file を使って環境を再現します。通常の利用開始時は lock file を更新しません。</p>
+                <div class="code-caption">powershell</div>
+        <pre class="code-block language-powershell"><code class="language-powershell">uv sync --locked</code></pre>
+              </section>
+              <section id="verify-project" data-toc data-toc-title="動作確認する">
+                <h2>6. 動作確認する</h2>
+                <div class="code-caption">powershell</div>
+        <pre class="code-block language-powershell"><code class="language-powershell">uv run python --version
+uv run pytest</code></pre>
+              </section>
+              <section id="lock-file-policy" data-toc data-toc-title="lock file 更新の扱い">
+                <h2>7. lock file 更新の扱い</h2>
+                <p>利用開始だけが目的の場合は <code>uv.lock</code> を更新しません。依存追加やバージョン更新が目的の場合だけ、変更理由を明確にして lock file を更新します。</p>
               </section>
               <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation">
-                <a class="chapter-nav-link previous" href="install.html">
+                <a class="chapter-nav-link previous" href="start-project.html">
                   <span>Previous</span>
-                  <strong>uv のインストール</strong>
+                  <strong>新規 uv プロジェクトの始め方</strong>
                 </a>
-                <a class="chapter-nav-link next" href="usage.html">
+                <a class="chapter-nav-link next" href="migration.html">
                   <span>Next</span>
-                  <strong>uv の基本操作と概念</strong>
+                  <strong>Poetry + pyenv から uv へ移行する</strong>
                 </a>
               </nav>
       </article>
     </main>
   </div>
 
-  <script defer src="assets/js/technical-doc.js"></script>
+  <script defer src="../assets/js/technical-doc.js"></script>
 </body>
 </html>

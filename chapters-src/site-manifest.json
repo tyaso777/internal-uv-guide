@@ -3,7 +3,7 @@
   "description": "社内 Python 開発環境を uv ベースで導入・移行・運用するためのガイドです。",
   "lang": "ja",
   "shell": "../layouts/chapter-shell.html",
-  "outputDir": "..",
+  "outputDir": "../chapters",
   "layout": {
     "defaultMode": "standard"
   },

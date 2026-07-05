@@ -9,12 +9,12 @@
 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="uv 対応済みの既存プロジェクトを取得し、lock file を尊重して手元で動かす流れを示します。">
-  <meta property="og:title" content="clone・コピーした uv プロジェクトの始め方">
-  <meta property="og:description" content="uv 対応済みの既存プロジェクトを取得し、lock file を尊重して手元で動かす流れを示します。">
+  <meta name="description" content="uv 利用時に必要な脆弱性監査、ライセンス確認、依存追加時のレビュー観点を整理します。">
+  <meta property="og:title" content="uv 利用時のセキュリティ運用">
+  <meta property="og:description" content="uv 利用時に必要な脆弱性監査、ライセンス確認、依存追加時のレビュー観点を整理します。">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="社内 uv 利用ガイド">
-  <title>clone・コピーした uv プロジェクトの始め方</title>
+  <title>uv 利用時のセキュリティ運用</title>
 
   <!-- Library config -->
   <script>
@@ -61,7 +61,7 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js" integrity="sha512-Vs2GKxnxnTQBRW7o2xXZ9A28njjmu5RToS42efiKNEWmikov0inZY522EtGVK5CcVo0M/FQwmXsTfl9skgRnvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 
-  <link rel="stylesheet" href="assets/css/technical-doc.css">
+  <link rel="stylesheet" href="../assets/css/technical-doc.css">
 </head>
 
 <body class="line-numbers document-page">
@@ -70,7 +70,7 @@
   <div class="layout">
     <aside class="sidebar" aria-label="Document navigation">
       <header class="sidebar-header" aria-labelledby="sidebar-title">
-        <h2 id="sidebar-title" class="sidebar-title">clone・コピーした uv プロジェクトの始め方</h2>
+        <h2 id="sidebar-title" class="sidebar-title">セキュリティ運用</h2>
         <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順</p>
       </header>
 
@@ -177,8 +177,8 @@
               </details>
             </li>
             <li class="site-contents-chapter">
-              <details open>
-                <summary><a href="copy-existing-project.html" aria-current="page">clone・コピーした uv プロジェクトの始め方</a></summary>
+              <details>
+                <summary><a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="copy-existing-project.html#copy-or-clone">1. プロジェクトを取得する</a>
                   </li>
@@ -221,8 +221,8 @@
               </details>
             </li>
             <li class="site-contents-chapter">
-              <details>
-                <summary><a href="security.html">uv 利用時のセキュリティ運用</a></summary>
+              <details open>
+                <summary><a href="security.html" aria-current="page">uv 利用時のセキュリティ運用</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="security.html#minimum-checks">1. 最低限入れるチェック</a>
                   </li>
@@ -262,91 +262,45 @@
     <main id="main" tabindex="-1">
       <article class="content">
         <header class="hero">
-                <h1>clone・コピーした uv プロジェクトの始め方</h1>
-                <p>uv 対応済みの既存プロジェクトを取得し、lock file を尊重して手元で動かす流れを示します。</p>
+                <h1>uv 利用時のセキュリティ運用</h1>
+                <p>uv 利用時に必要な脆弱性監査、ライセンス確認、依存追加時のレビュー観点を整理します。</p>
               </header>
 
               <section class="chapter-intro" aria-label="このページの目的">
                 <h2>ページ概要</h2>
-                <p>このページの目的は、uv 対応済みの既存プロジェクトを clone またはコピーし、手元の端末で同期して動作確認することです。既存の <code>uv.lock</code> を尊重し、意図しない依存更新を避けながら環境を再現します。</p>
+                <p>このページの目的は、uv で依存関係を管理するプロジェクトに対して、脆弱性監査、ライセンス確認、依存追加時レビューをどのように組み込むかを整理することです。監査ツールの導入例と、レビューで確認する観点を扱います。</p>
               </section>
-              <section id="copy-or-clone" data-toc data-toc-title="プロジェクトを取得する">
-                <h2>1. プロジェクトを取得する</h2>
+              <section id="minimum-checks" data-toc data-toc-title="最低限入れるチェック">
+                <h2>1. 最低限入れるチェック</h2>
+                <div class="table-wrap"><table><thead><tr><th>項目</th><th>ツール例</th><th>目的</th></tr></thead><tbody><tr><td>脆弱性監査</td><td><code>pip-audit</code></td><td>既知 CVE や advisories の検出。</td></tr>
+        <tr><td>ライセンス監査</td><td><code>pip-licenses</code></td><td>利用不可ライセンスや不明ライセンスの検出。</td></tr>
+        <tr><td>静的解析</td><td><code>ruff</code>, <code>mypy</code></td><td>品質と型の回帰検出。</td></tr></tbody></table></div>
+              </section>
+              <section id="pip-audit" data-toc data-toc-title="pip-audit">
+                <h2>2. pip-audit</h2>
                 <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell">git clone https://github.com/example/my-app.git
-cd my-app</code></pre>
-                <aside class="callout callout-info">
-                <div class="callout-label">Note</div>フォルダをコピーして始める場合も、<code>.venv</code> はコピーせず、手元で <code>uv sync</code> により再生成します。</aside>
+        <pre class="code-block language-powershell"><code class="language-powershell">uv add --dev pip-audit
+uv sync --locked
+uv run pip-audit</code></pre>
               </section>
-              <section id="network-session-settings" data-toc data-toc-title="ネットワーク設定を適用する">
-                <h2>2. ネットワーク設定を適用する</h2>
-                <p>依存パッケージ取得時に社内 proxy や社内 CA が必要な場合は、同期前にこの PowerShell セッションへ設定します。</p>
+              <section id="pip-licenses" data-toc data-toc-title="pip-licenses">
+                <h2>3. pip-licenses</h2>
                 <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell"># proxy をこの PowerShell セッションに設定する
-$env:HTTP_PROXY="http://proxy.example.co.jp:8080"
-$env:HTTPS_PROXY="http://proxy.example.co.jp:8080"
-
-# OS の証明書ストアをこの PowerShell セッションで利用する
-$env:UV_SYSTEM_CERTS="1"
-
-# 設定された値を確認する
-echo $env:HTTP_PROXY
-echo $env:HTTPS_PROXY
-echo $env:UV_SYSTEM_CERTS</code></pre>
+        <pre class="code-block language-powershell"><code class="language-powershell">uv add --dev pip-licenses
+uv run pip-licenses --format=markdown --output-file=licenses.md</code></pre>
               </section>
-              <section id="check-python-version" data-toc data-toc-title="Python バージョン指定を確認する">
-                <h2>3. Python バージョン指定を確認する</h2>
-                <p><code>.python-version</code> と <code>pyproject.toml</code> の <code>requires-python</code> を確認し、プロジェクトが想定する Python バージョンで同期します。</p>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell">Get-Content .python-version
-Select-String -Path pyproject.toml -Pattern "requires-python"</code></pre>
-              </section>
-              <section id="set-project-environment" data-toc data-toc-title="仮想環境の作成先を設定する">
-                <h2>4. 仮想環境の作成先を設定する</h2>
-                <p>共有フォルダ上で作業する場合は、<code>uv sync</code> の前に <code>UV_PROJECT_ENVIRONMENT</code> を設定します。clone またはコピーしたプロジェクトでは、現在いるプロジェクトフォルダ名と保存場所から、このプロジェクト用の仮想環境パスを作ります。</p>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell"># プロジェクトフォルダの絶対パスを取得する
-$projectRoot=(Resolve-Path .).Path
-
-# プロジェクト名を現在のフォルダ名から取得する
-$projectName=Split-Path -Leaf $projectRoot
-
-# 同じプロジェクト名の仮想環境と衝突しないように、
-# プロジェクトの保存場所をもとに短いハッシュを作る
-$normalizedProjectRoot=$projectRoot.ToLowerInvariant()
-$sha256=[System.Security.Cryptography.SHA256]::Create()
-$hashBytes=$sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($normalizedProjectRoot))
-$hash=([System.BitConverter]::ToString($hashBytes) -replace "-", "").Substring(0,8).ToLowerInvariant()
-
-# 仮想環境の作成先を、このプロジェクト用のローカルフォルダに設定する
-$env:UV_PROJECT_ENVIRONMENT="$env:USERPROFILE\.uv\venvs\$projectName-$hash"
-
-# 設定された仮想環境の場所を確認する
-echo $env:UV_PROJECT_ENVIRONMENT</code></pre>
-              </section>
-              <section id="sync-environment" data-toc data-toc-title="環境を同期する">
-                <h2>5. 環境を同期する</h2>
-                <p>既存の lock file を使って環境を再現します。通常の利用開始時は lock file を更新しません。</p>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell">uv sync --locked</code></pre>
-              </section>
-              <section id="verify-project" data-toc data-toc-title="動作確認する">
-                <h2>6. 動作確認する</h2>
-                <div class="code-caption">powershell</div>
-        <pre class="code-block language-powershell"><code class="language-powershell">uv run python --version
-uv run pytest</code></pre>
-              </section>
-              <section id="lock-file-policy" data-toc data-toc-title="lock file 更新の扱い">
-                <h2>7. lock file 更新の扱い</h2>
-                <p>利用開始だけが目的の場合は <code>uv.lock</code> を更新しません。依存追加やバージョン更新が目的の場合だけ、変更理由を明確にして lock file を更新します。</p>
+              <section id="dependency-review" data-toc data-toc-title="依存追加時のレビュー観点">
+                <h2>4. 依存追加時のレビュー観点</h2>
+                <ul>
+                  <li>依存名が社内標準や既存依存と重複・類似していないか。</li>
+                  <li>typosquatting らしい名前ではないか。</li>
+                  <li>公開直後のパッケージや、メンテナ変更直後のパッケージではないか。</li>
+                  <li><code>uv.lock</code> の差分が依存追加の目的に対して妥当か。</li>
+                </ul>
               </section>
               <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation">
-                <a class="chapter-nav-link previous" href="start-project.html">
+                <a class="chapter-nav-link previous" href="migration.html">
                   <span>Previous</span>
-                  <strong>新規 uv プロジェクトの始め方</strong>
-                </a>
-                <a class="chapter-nav-link next" href="migration.html">
-                  <span>Next</span>
                   <strong>Poetry + pyenv から uv へ移行する</strong>
                 </a>
               </nav>
@@ -354,6 +308,6 @@ uv run pytest</code></pre>
     </main>
   </div>
 
-  <script defer src="assets/js/technical-doc.js"></script>
+  <script defer src="../assets/js/technical-doc.js"></script>
 </body>
 </html>

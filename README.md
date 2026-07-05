@@ -4,14 +4,14 @@
 
 ## Contents
 
-- [概要](index.html)
-- [インストール](install.html)
-- [ネットワーク設定の基本](setup.html)
-- [基本操作と概念](usage.html)
-- [新規 uv プロジェクトの始め方](start-project.html)
-- [clone・コピーした uv プロジェクトの始め方](copy-existing-project.html)
-- [Poetry + pyenv からの移行](migration.html)
-- [セキュリティ運用](security.html)
+- [概要](chapters/index.html)
+- [インストール](chapters/install.html)
+- [ネットワーク設定の基本](chapters/setup.html)
+- [基本操作と概念](chapters/usage.html)
+- [新規 uv プロジェクトの始め方](chapters/start-project.html)
+- [clone・コピーした uv プロジェクトの始め方](chapters/copy-existing-project.html)
+- [Poetry + pyenv からの移行](chapters/migration.html)
+- [セキュリティ運用](chapters/security.html)
 
 ## Template
 
@@ -23,5 +23,5 @@ This document uses assets from [tyaso777/html-doc-template](https://github.com/t
 
 ```powershell
 python scripts\build_site.py
-python scripts\check_html.py index.html install.html setup.html usage.html start-project.html copy-existing-project.html migration.html security.html chapters-src
+python scripts\check_html.py
 ```
