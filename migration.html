@@ -1,27 +1,86 @@
 <!doctype html>
 <html lang="ja">
 <head>
+<!--
+  Security note:
+  Browser-loaded CDN script and stylesheet assets are pinned with SRI and
+  crossorigin="anonymous". Pyodide is loaded separately inside a Web Worker;
+  see README.md for the importScripts() SRI limitation.
+-->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Poetry + pyenv から uv へ移行する - 社内 uv 利用ガイド</title>
+  <meta name="description" content="Poetry + pyenv 構成の既存プロジェクトを uv ベースの運用へ移行する手順を整理します。">
+  <meta property="og:title" content="Poetry + pyenv から uv へ移行する">
+  <meta property="og:description" content="Poetry + pyenv 構成の既存プロジェクトを uv ベースの運用へ移行する手順を整理します。">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="社内 uv 利用ガイド">
+  <title>Poetry + pyenv から uv へ移行する</title>
+
+  <!-- Library config -->
+  <script>
+    window.technicalDocDefaultLayoutMode = "standard";
+
+    try {
+      const savedLayoutMode = window.localStorage ? window.localStorage.getItem("technicalDocLayoutMode") : null;
+      const initialLayoutMode = savedLayoutMode || window.technicalDocDefaultLayoutMode;
+      if (initialLayoutMode === "wide") {
+        document.documentElement.classList.add("layout-wide");
+      }
+    } catch (error) {
+      document.documentElement.classList.remove("layout-wide");
+    }
+
+    window.Prism = window.Prism || {};
+    window.Prism.manual = true;
+
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: true
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+
+  <!-- External libraries -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.css" integrity="sha512-cbQXwDFK7lj2Fqfkuxbo5iD1dSbLlJGXGpfTDqbggqjHJeyzx88I3rfwjS38WJag/ihH7lzuGlGHpDBymLirZQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/prism.min.js" integrity="sha512-HiD3V4nv8fcjtouznjT9TqDNDm1EXngV331YGbfVGeKUoH+OLkRTCMzA34ecjlgSQZpdHZupdSrqHY+Hz3l6uQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-python.min.js" integrity="sha512-AKaNmg8COK0zEbjTdMHJAPJ0z6VeNqvRvH4/d5M4sHJbQQUToMBtodq4HaV4fa+WV2UTfoperElm66c9/8cKmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-powershell.min.js" integrity="sha512-mNRS5mGSidY0juPNlXC17z6atUusuE8Fdbu5+zK6drBDbroYeaEfudGKSRoFvRpzseJq2v3bNOwpEFHi6L82Aw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-java.min.js" integrity="sha512-xKcnbsdT0KMoA4yrozkqZM1XJVTrPsjdQwvigxlAlxEDu8YDvC/jl+LfVqn0fY3Vs6m2y4a89JCHEIA/Z9zpmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-sql.min.js" integrity="sha512-sijCOJblSCXYYmXdwvqV0tak8QJW5iy2yLB1wAbbLc3OOIueqymizRFWUS/mwKctnzPKpNdPJV3aK1zlDMJmXQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-mermaid.min.js" integrity="sha512-TWvtkke2tZtIQOA5/sjGM0S2RCMLTxhLKh0zYvhHdhVQizOaPcF9uYa+szt+kun01TCUVALUcVxlta8fjwt1jQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.js" integrity="sha512-BttltKXFyWnGZQcRWj6osIg7lbizJchuAMotOkdLxHxwt/Hyo+cl47bZU0QADg+Qt5DJwni3SbYGXeGMB5cBcw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" integrity="sha256-1CldwzdEg2k1wTmf7s5RWVd7NMXI/7nxxjJM2C4DqII=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js" integrity="sha512-OeZ4Yrb/W7d2W4rAMOO0HQ9Ro/aWLtpW9BUSR2UOWnSV2hprXLkkYnnCGc9NeLUxxE4ZG7zN16UuT1Elqq8Opg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js" integrity="sha512-Vs2GKxnxnTQBRW7o2xXZ9A28njjmu5RToS42efiKNEWmikov0inZY522EtGVK5CcVo0M/FQwmXsTfl9skgRnvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
   <link rel="stylesheet" href="assets/css/technical-doc.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
 </head>
-<body>
+
+<body class="line-numbers document-page">
+  <a class="skip-link" href="#main">Skip to main content</a>
+
   <div class="layout">
-    
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Document navigation">
       <header class="sidebar-header" aria-labelledby="sidebar-title">
-        <h2 id="sidebar-title" class="sidebar-title">社内 uv 利用ガイド</h2>
+        <h2 id="sidebar-title" class="sidebar-title">Poetry + pyenv からの移行</h2>
         <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順</p>
       </header>
+
       <details class="nav-section" open>
         <summary>Contents</summary>
         <div class="nav-body">
           <ol class="nav-list site-contents-tree">
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="index.html">概要</a></summary>
+                <summary><a href="index.html">社内で uv を使うための導入・移行・運用ガイド</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="index.html#purpose">1. 目的</a>
                   </li>
@@ -36,7 +95,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="install.html">インストール</a></summary>
+                <summary><a href="install.html">uv のインストール</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="install.html#prerequisites">1. proxy 設定を確認する</a>
                   </li>
@@ -51,7 +110,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="setup.html">ネットワーク設定の基本</a></summary>
+                <summary><a href="setup.html">uv のネットワーク設定の基本</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="setup.html#proxy-check">1. proxy の確認</a>
                   </li>
@@ -70,7 +129,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="usage.html">基本操作と概念</a></summary>
+                <summary><a href="usage.html">uv の基本操作と概念</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="usage.html#core-concepts">1. 主要概念</a>
                   </li>
@@ -90,9 +149,9 @@
                   </li>
                   <li><a href="usage.html#extras-markers-sources">9. extras・markers・特殊な依存</a>
                     <ol>
-                      <li><a href="usage.html#extras">9.1 extras</a></li>
-                      <li><a href="usage.html#environment-markers">9.2 environment markers</a></li>
-                      <li><a href="usage.html#direct-url-git-path">9.3 direct URL / Git / path</a></li>
+                      <li><a href="usage.html#extras">9.1. extras</a></li>
+                      <li><a href="usage.html#environment-markers">9.2. environment markers</a></li>
+                      <li><a href="usage.html#direct-url-git-path">9.3. direct URL / Git / path</a></li>
                     </ol>
                   </li>
                   <li><a href="usage.html#python-management">10. Python の管理</a>
@@ -140,7 +199,7 @@
             </li>
             <li class="site-contents-chapter">
               <details open>
-                <summary><a href="migration.html" aria-current="page">Poetry + pyenv からの移行</a></summary>
+                <summary><a href="migration.html" aria-current="page">Poetry + pyenv から uv へ移行する</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="migration.html#migration-goal">1. 移行のゴール</a>
                   </li>
@@ -163,7 +222,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="security.html">セキュリティ運用</a></summary>
+                <summary><a href="security.html">uv 利用時のセキュリティ運用</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="security.html#minimum-checks">1. 最低限入れるチェック</a>
                   </li>
@@ -179,139 +238,148 @@
           </ol>
         </div>
       </details>
-      <details class="nav-section" open>
-        <summary>References</summary>
+
+      <details class="nav-section layout-mode-section" open>
+        <summary>Layout</summary>
         <div class="nav-body">
-          <ol class="nav-list">
-            <li><a href="https://docs.astral.sh/uv/" target="_blank" rel="noreferrer">uv 公式ドキュメント</a></li>
-            <li><a href="https://github.com/tyaso777/html-doc-template" target="_blank" rel="noreferrer">html-doc-template</a></li>
-          </ol>
+          <fieldset class="layout-mode-control" aria-label="Layout width">
+            <label>
+              <input type="radio" name="layout-mode" value="standard" checked>
+              <span>Standard</span>
+            </label>
+            <label>
+              <input type="radio" name="layout-mode" value="wide">
+              <span>Wide</span>
+            </label>
+          </fieldset>
         </div>
       </details>
-    </aside>
-    <main class="content">
-      <header class="hero">
-        <h1>Poetry + pyenv から uv へ移行する</h1>
-        <p>Poetry + pyenv 構成の既存プロジェクトを uv ベースの運用へ移行する手順を整理します。</p>
-      </header>
 
-      <section class="chapter-intro" aria-label="このページの目的">
-        <h2>ページ概要</h2>
-        <p>このページの目的は、Poetry + pyenv を前提にした既存プロジェクトを uv ベースの運用へ移行する手順と判断点を整理することです。単にコマンドを置き換えるのではなく、Python バージョン、仮想環境、依存解決、lock file の扱いを揃えることを目的にします。</p>
-      </section>
-      <section id="migration-goal" data-toc data-toc-title="移行のゴール">
-        <h2>1. 移行のゴール</h2>
-        <p>Poetry + pyenv から uv へ移行する目的は、単にコマンド名を置き換えることではありません。Python バージョン、仮想環境、依存解決、lock file の扱いを uv に揃え、開発者ごとの環境差分を減らすことがゴールです。</p>
-        <aside class="callout callout-warning">移行 PR では、<code>poetry.lock</code> から <code>uv.lock</code> へ lock file が変わるため差分が大きくなります。依存追加や大きなバージョン更新とは別 PR に分け、移行そのものの差分をレビューしやすくします。</aside>
-      </section>
-      <section id="command-mapping" data-toc data-toc-title="コマンド対応表">
-        <h2>2. コマンド対応表</h2>
-        <div class="table-wrap"><table><thead><tr><th>現在</th><th>uv</th><th>補足</th></tr></thead><tbody><tr><td><code>pyenv install 3.11.9</code></td><td><code>uv python install 3.11.9</code></td><td>uv で利用できる Python バージョンに限る。</td></tr>
-<tr><td><code>pyenv local 3.11.9</code></td><td><code>uv python pin 3.11.9</code></td><td><code>.python-version</code> を作成または更新する。</td></tr>
-<tr><td><code>poetry init</code></td><td><code>uv init</code></td><td>既存プロジェクトでは上書きに注意する。</td></tr>
-<tr><td><code>poetry add requests</code></td><td><code>uv add requests</code></td><td><code>pyproject.toml</code> と <code>uv.lock</code> を更新する。</td></tr>
-<tr><td><code>poetry add --group dev pytest</code></td><td><code>uv add --dev pytest</code></td><td>開発用依存として追加する。</td></tr>
-<tr><td><code>poetry install</code></td><td><code>uv sync</code></td><td>lock file に合わせて仮想環境を作る。</td></tr>
-<tr><td><code>poetry run pytest</code></td><td><code>uv run pytest</code></td><td>プロジェクト環境で実行する。</td></tr>
-<tr><td><code>poetry lock</code></td><td><code>uv lock</code></td><td><code>poetry.lock</code> ではなく <code>uv.lock</code> を生成する。</td></tr>
-<tr><td><code>poetry env info</code></td><td><code>uv run python -c ...</code></td><td>必要なら <code>sys.executable</code> や <code>sys.version</code> を確認する。</td></tr></tbody></table></div>
-      </section>
-      <section id="migration-policy" data-toc data-toc-title="移行方針を決める">
-        <h2>3. 移行方針を決める</h2>
-        <p>手を動かす前に、移行後の標準を明確にします。ここが曖昧だと、他メンバーの環境で差分が出ます。</p>
-        <ul>
-          <li>Python バージョンは既存の <code>.python-version</code> を維持するか、移行と同時に変更するか。</li>
-          <li>uv 本体の標準バージョンを何にするか。</li>
-          <li>依存解決時の <code>--exclude-newer "X days"</code> を標準にするか。</li>
-          <li>社内パッケージリポジトリの参照先を <code>pyproject.toml</code> に書くか、ユーザーの uv 設定に置くか。</li>
-          <li>Poetry 固有の package 設定や scripts を uv / PEP 621 形式へ移す範囲。</li>
-        </ul>
-      </section>
-      <section id="local-migration" data-toc data-toc-title="ローカルで移行する">
-        <h2>4. ローカルで移行する</h2>
-        <p>まず uv で Python を固定し、lock file を作り、テストが通るところまで確認します。</p>
-        <div class="code-caption">powershell</div>
-<pre class="code-block language-powershell"><code class="language-powershell">uv python pin 3.12
+
+
+    </aside>
+
+    <main id="main" tabindex="-1">
+      <article class="content">
+        <header class="hero">
+                <h1>Poetry + pyenv から uv へ移行する</h1>
+                <p>Poetry + pyenv 構成の既存プロジェクトを uv ベースの運用へ移行する手順を整理します。</p>
+              </header>
+
+              <section class="chapter-intro" aria-label="このページの目的">
+                <h2>ページ概要</h2>
+                <p>このページの目的は、Poetry + pyenv を前提にした既存プロジェクトを uv ベースの運用へ移行する手順と判断点を整理することです。単にコマンドを置き換えるのではなく、Python バージョン、仮想環境、依存解決、lock file の扱いを揃えることを目的にします。</p>
+              </section>
+              <section id="migration-goal" data-toc data-toc-title="移行のゴール">
+                <h2>1. 移行のゴール</h2>
+                <p>Poetry + pyenv から uv へ移行する目的は、単にコマンド名を置き換えることではありません。Python バージョン、仮想環境、依存解決、lock file の扱いを uv に揃え、開発者ごとの環境差分を減らすことがゴールです。</p>
+                <aside class="callout callout-warning">
+                <div class="callout-label">Warning</div>移行 PR では、<code>poetry.lock</code> から <code>uv.lock</code> へ lock file が変わるため差分が大きくなります。依存追加や大きなバージョン更新とは別 PR に分け、移行そのものの差分をレビューしやすくします。</aside>
+              </section>
+              <section id="command-mapping" data-toc data-toc-title="コマンド対応表">
+                <h2>2. コマンド対応表</h2>
+                <div class="table-wrap"><table><thead><tr><th>現在</th><th>uv</th><th>補足</th></tr></thead><tbody><tr><td><code>pyenv install 3.11.9</code></td><td><code>uv python install 3.11.9</code></td><td>uv で利用できる Python バージョンに限る。</td></tr>
+        <tr><td><code>pyenv local 3.11.9</code></td><td><code>uv python pin 3.11.9</code></td><td><code>.python-version</code> を作成または更新する。</td></tr>
+        <tr><td><code>poetry init</code></td><td><code>uv init</code></td><td>既存プロジェクトでは上書きに注意する。</td></tr>
+        <tr><td><code>poetry add requests</code></td><td><code>uv add requests</code></td><td><code>pyproject.toml</code> と <code>uv.lock</code> を更新する。</td></tr>
+        <tr><td><code>poetry add --group dev pytest</code></td><td><code>uv add --dev pytest</code></td><td>開発用依存として追加する。</td></tr>
+        <tr><td><code>poetry install</code></td><td><code>uv sync</code></td><td>lock file に合わせて仮想環境を作る。</td></tr>
+        <tr><td><code>poetry run pytest</code></td><td><code>uv run pytest</code></td><td>プロジェクト環境で実行する。</td></tr>
+        <tr><td><code>poetry lock</code></td><td><code>uv lock</code></td><td><code>poetry.lock</code> ではなく <code>uv.lock</code> を生成する。</td></tr>
+        <tr><td><code>poetry env info</code></td><td><code>uv run python -c ...</code></td><td>必要なら <code>sys.executable</code> や <code>sys.version</code> を確認する。</td></tr></tbody></table></div>
+              </section>
+              <section id="migration-policy" data-toc data-toc-title="移行方針を決める">
+                <h2>3. 移行方針を決める</h2>
+                <p>手を動かす前に、移行後の標準を明確にします。ここが曖昧だと、他メンバーの環境で差分が出ます。</p>
+                <ul>
+                  <li>Python バージョンは既存の <code>.python-version</code> を維持するか、移行と同時に変更するか。</li>
+                  <li>uv 本体の標準バージョンを何にするか。</li>
+                  <li>依存解決時の <code>--exclude-newer "X days"</code> を標準にするか。</li>
+                  <li>社内パッケージリポジトリの参照先を <code>pyproject.toml</code> に書くか、ユーザーの uv 設定に置くか。</li>
+                  <li>Poetry 固有の package 設定や scripts を uv / PEP 621 形式へ移す範囲。</li>
+                </ul>
+              </section>
+              <section id="local-migration" data-toc data-toc-title="ローカルで移行する">
+                <h2>4. ローカルで移行する</h2>
+                <p>まず uv で Python を固定し、lock file を作り、テストが通るところまで確認します。</p>
+                <div class="code-caption">powershell</div>
+        <pre class="code-block language-powershell"><code class="language-powershell">uv python pin 3.12
 uv lock --exclude-newer "7 days"
 uv sync
 uv run python --version
 uv run pytest</code></pre>
-        <aside class="callout callout-warning"><code>uv lock</code> は <code>poetry.lock</code> をそのまま変換するコマンドではありません。<code>pyproject.toml</code> の依存定義から uv が新しく解決し、<code>uv.lock</code> を生成します。</aside>
-      </section>
-      <section id="pyproject-adjustments" data-toc data-toc-title="pyproject.toml を調整する">
-        <h2>5. pyproject.toml を調整する</h2>
-        <p>Poetry だけが読む設定と、PEP 621 / uv が読む設定を分けて確認します。既存の <code>[tool.ruff]</code>、<code>[tool.pytest.ini_options]</code>、<code>[tool.mypy]</code> などのツール設定は基本的にそのまま維持します。</p>
-        <ul>
-          <li><code>[project]</code> の <code>requires-python</code> が実際の Python バージョンと合っているか確認する。</li>
-          <li>runtime dependency と dev dependency が正しいグループに入っているか確認する。</li>
-          <li>Poetry の scripts を使っている場合、<code>[project.scripts]</code> へ移せるか確認する。</li>
-          <li>社内パッケージリポジトリの URL に認証情報を直接書いていないか確認する。</li>
-          <li>パッケージとして配布しないアプリケーションなら、build 設定が不要か確認する。</li>
-        </ul>
-        <p>Poetry では <code>[tool.poetry.dependencies]</code> に TOML テーブル形式で依存を書くことがありますが、uv では通常 <code>[project].dependencies</code> に PEP 508 文字列として記録します。Poetry の <code>^2.2</code> のような caret requirement は、<code>&gt;=2.2,&lt;3</code> のように範囲指定へ展開します。依存追加は <code>uv add "pandas&gt;=2.2,&lt;3"</code> のように行い、記法の詳細は <a href="usage.html#pyproject-dependency-notation">pyproject.toml のライブラリ記法</a> と <a href="usage.html#poetry-caret-notation">Poetry の ^ 記法との対応</a> を参照します。</p>
-        <div class="table-wrap"><table><thead><tr><th>Poetry 形式の例</th><th>uv / PEP 621 形式の例</th></tr></thead><tbody><tr><td><code>pandas = "^2.2"</code></td><td><code>"pandas&gt;=2.2,&lt;3"</code></td></tr>
-<tr><td><code>python = "&gt;=3.11,&lt;3.13"</code></td><td><code>requires-python = "&gt;=3.11,&lt;3.13"</code></td></tr>
-<tr><td><code>pytest = &#123; group = "dev", version = "^8" &#125;</code></td><td><code>[dependency-groups].dev = ["pytest&gt;=8"]</code></td></tr>
-<tr><td><code>fastapi = &#123; extras = ["standard"], version = "^0.115" &#125;</code></td><td><code>"fastapi[standard]&gt;=0.115"</code></td></tr></tbody></table></div>
-      </section>
-      <section id="verification" data-toc data-toc-title="動作確認する">
-        <h2>6. 動作確認する</h2>
-        <p>Poetry で実行していたチェックを uv 経由に置き換え、同じ結果になるか確認します。</p>
-        <div class="code-caption">powershell</div>
-<pre class="code-block language-powershell"><code class="language-powershell">uv sync --locked
+                <aside class="callout callout-warning">
+                <div class="callout-label">Warning</div><code>uv lock</code> は <code>poetry.lock</code> をそのまま変換するコマンドではありません。<code>pyproject.toml</code> の依存定義から uv が新しく解決し、<code>uv.lock</code> を生成します。</aside>
+              </section>
+              <section id="pyproject-adjustments" data-toc data-toc-title="pyproject.toml を調整する">
+                <h2>5. pyproject.toml を調整する</h2>
+                <p>Poetry だけが読む設定と、PEP 621 / uv が読む設定を分けて確認します。既存の <code>[tool.ruff]</code>、<code>[tool.pytest.ini_options]</code>、<code>[tool.mypy]</code> などのツール設定は基本的にそのまま維持します。</p>
+                <ul>
+                  <li><code>[project]</code> の <code>requires-python</code> が実際の Python バージョンと合っているか確認する。</li>
+                  <li>runtime dependency と dev dependency が正しいグループに入っているか確認する。</li>
+                  <li>Poetry の scripts を使っている場合、<code>[project.scripts]</code> へ移せるか確認する。</li>
+                  <li>社内パッケージリポジトリの URL に認証情報を直接書いていないか確認する。</li>
+                  <li>パッケージとして配布しないアプリケーションなら、build 設定が不要か確認する。</li>
+                </ul>
+                <p>Poetry では <code>[tool.poetry.dependencies]</code> に TOML テーブル形式で依存を書くことがありますが、uv では通常 <code>[project].dependencies</code> に PEP 508 文字列として記録します。Poetry の <code>^2.2</code> のような caret requirement は、<code>&gt;=2.2,&lt;3</code> のように範囲指定へ展開します。依存追加は <code>uv add "pandas&gt;=2.2,&lt;3"</code> のように行い、記法の詳細は <a href="usage.html#pyproject-dependency-notation">pyproject.toml のライブラリ記法</a> と <a href="usage.html#poetry-caret-notation">Poetry の ^ 記法との対応</a> を参照します。</p>
+                <div class="table-wrap"><table><thead><tr><th>Poetry 形式の例</th><th>uv / PEP 621 形式の例</th></tr></thead><tbody><tr><td><code>pandas = "^2.2"</code></td><td><code>"pandas&gt;=2.2,&lt;3"</code></td></tr>
+        <tr><td><code>python = "&gt;=3.11,&lt;3.13"</code></td><td><code>requires-python = "&gt;=3.11,&lt;3.13"</code></td></tr>
+        <tr><td><code>pytest = &#123; group = "dev", version = "^8" &#125;</code></td><td><code>[dependency-groups].dev = ["pytest&gt;=8"]</code></td></tr>
+        <tr><td><code>fastapi = &#123; extras = ["standard"], version = "^0.115" &#125;</code></td><td><code>"fastapi[standard]&gt;=0.115"</code></td></tr></tbody></table></div>
+              </section>
+              <section id="verification" data-toc data-toc-title="動作確認する">
+                <h2>6. 動作確認する</h2>
+                <p>Poetry で実行していたチェックを uv 経由に置き換え、同じ結果になるか確認します。</p>
+                <div class="code-caption">powershell</div>
+        <pre class="code-block language-powershell"><code class="language-powershell">uv sync --locked
 uv run pytest
 uv run ruff check .
 uv run python -m pip check
 uv tree</code></pre>
-        <p>確認すべき観点:</p>
-        <ul>
-          <li>テスト結果が Poetry 環境と一致するか。</li>
-          <li>CLI entry point やアプリ起動コマンドが動くか。</li>
-          <li>Jupyter、pre-commit、IDE の interpreter 設定が <code>.venv</code> を参照できるか。</li>
-          <li>proxy / SSL / 社内パッケージリポジトリの設定で依存パッケージを取得できるか。</li>
-        </ul>
-      </section>
-      <section id="cleanup" data-toc data-toc-title="Poetry / pyenv 前提を整理する">
-        <h2>7. Poetry / pyenv 前提を整理する</h2>
-        <p>テストが通った後で、古い前提を整理します。先に消すと原因切り分けが難しくなるため、検証後に行います。</p>
-        <ul>
-          <li><code>poetry.lock</code> を削除し、<code>uv.lock</code> を追加する。</li>
-          <li>README の <code>poetry install</code>、<code>poetry run</code>、<code>pyenv install</code> を uv コマンドに置き換える。</li>
-          <li>pre-commit、開発者向けセットアップ手順から Poetry 前提を除く。</li>
-          <li><code>.python-version</code> は uv でも使うため、必要なら維持する。</li>
-          <li>Poetry を完全に不要にするか、配布用途だけ残すかを明記する。</li>
-        </ul>
-      </section>
-      <section id="review-checklist" data-toc data-toc-title="レビュー観点">
-        <h2>8. レビュー観点</h2>
-        <ul>
-          <li><code>pyproject.toml</code> の依存定義が意図せず変わっていないか。</li>
-          <li><code>uv.lock</code> の差分が移行目的に対して妥当か。</li>
-          <li>Python バージョンがローカル環境で想定通りになっているか。</li>
-          <li>proxy / SSL / 社内パッケージリポジトリの設定に認証情報が混入していないか。</li>
-          <li>README の手順だけで新規開発者が環境構築できるか。</li>
-          <li>移行 PR に機能追加や依存の大幅更新が混ざっていないか。</li>
-        </ul>
-      </section>
-      <nav class="chapter-nav" aria-label="ページ移動"><a class="chapter-nav-link" href="copy-existing-project.html"><span>Previous</span><strong>clone・コピーした uv プロジェクトの始め方</strong></a>
-<a class="chapter-nav-link next" href="security.html"><span>Next</span><strong>セキュリティ運用</strong></a></nav>
-      <footer class="footer">最終更新: 2026-06-18</footer>
-      
-      <div class="visually-hidden" aria-hidden="true">
-        <textarea id="python-code"></textarea>
-        <button id="load-button" type="button">Load Python Runtime</button>
-        <button id="run-button" type="button">Run Python</button>
-        <button id="reset-button" type="button">Reset Code</button>
-        <button id="restart-runtime-button" type="button">Restart Python Runtime</button>
-        <pre id="output"></pre>
-        <span id="pyodide-status"></span>
-      </div>
+                <p>確認すべき観点:</p>
+                <ul>
+                  <li>テスト結果が Poetry 環境と一致するか。</li>
+                  <li>CLI entry point やアプリ起動コマンドが動くか。</li>
+                  <li>Jupyter、pre-commit、IDE の interpreter 設定が <code>.venv</code> を参照できるか。</li>
+                  <li>proxy / SSL / 社内パッケージリポジトリの設定で依存パッケージを取得できるか。</li>
+                </ul>
+              </section>
+              <section id="cleanup" data-toc data-toc-title="Poetry / pyenv 前提を整理する">
+                <h2>7. Poetry / pyenv 前提を整理する</h2>
+                <p>テストが通った後で、古い前提を整理します。先に消すと原因切り分けが難しくなるため、検証後に行います。</p>
+                <ul>
+                  <li><code>poetry.lock</code> を削除し、<code>uv.lock</code> を追加する。</li>
+                  <li>README の <code>poetry install</code>、<code>poetry run</code>、<code>pyenv install</code> を uv コマンドに置き換える。</li>
+                  <li>pre-commit、開発者向けセットアップ手順から Poetry 前提を除く。</li>
+                  <li><code>.python-version</code> は uv でも使うため、必要なら維持する。</li>
+                  <li>Poetry を完全に不要にするか、配布用途だけ残すかを明記する。</li>
+                </ul>
+              </section>
+              <section id="review-checklist" data-toc data-toc-title="レビュー観点">
+                <h2>8. レビュー観点</h2>
+                <ul>
+                  <li><code>pyproject.toml</code> の依存定義が意図せず変わっていないか。</li>
+                  <li><code>uv.lock</code> の差分が移行目的に対して妥当か。</li>
+                  <li>Python バージョンがローカル環境で想定通りになっているか。</li>
+                  <li>proxy / SSL / 社内パッケージリポジトリの設定に認証情報が混入していないか。</li>
+                  <li>README の手順だけで新規開発者が環境構築できるか。</li>
+                  <li>移行 PR に機能追加や依存の大幅更新が混ざっていないか。</li>
+                </ul>
+              </section>
+              <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation">
+                <a class="chapter-nav-link previous" href="copy-existing-project.html">
+                  <span>Previous</span>
+                  <strong>clone・コピーした uv プロジェクトの始め方</strong>
+                </a>
+                <a class="chapter-nav-link next" href="security.html">
+                  <span>Next</span>
+                  <strong>uv 利用時のセキュリティ運用</strong>
+                </a>
+              </nav>
+      </article>
     </main>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-powershell.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-toml.min.js"></script>
-  <script src="assets/js/technical-doc.js"></script>
+
+  <script defer src="assets/js/technical-doc.js"></script>
 </body>
 </html>

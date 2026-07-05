@@ -1,0 +1,38 @@
+<header class="hero">
+        <h1>uv 利用時のセキュリティ運用</h1>
+        <p>uv 利用時に必要な脆弱性監査、ライセンス確認、依存追加時のレビュー観点を整理します。</p>
+      </header>
+
+      <section class="chapter-intro" aria-label="このページの目的">
+        <h2>ページ概要</h2>
+        <p>このページの目的は、uv で依存関係を管理するプロジェクトに対して、脆弱性監査、ライセンス確認、依存追加時レビューをどのように組み込むかを整理することです。監査ツールの導入例と、レビューで確認する観点を扱います。</p>
+      </section>
+      <section id="minimum-checks" data-toc data-toc-title="最低限入れるチェック">
+        <h2>最低限入れるチェック</h2>
+        <div class="table-wrap"><table><thead><tr><th>項目</th><th>ツール例</th><th>目的</th></tr></thead><tbody><tr><td>脆弱性監査</td><td><code>pip-audit</code></td><td>既知 CVE や advisories の検出。</td></tr>
+<tr><td>ライセンス監査</td><td><code>pip-licenses</code></td><td>利用不可ライセンスや不明ライセンスの検出。</td></tr>
+<tr><td>静的解析</td><td><code>ruff</code>, <code>mypy</code></td><td>品質と型の回帰検出。</td></tr></tbody></table></div>
+      </section>
+      <section id="pip-audit" data-toc data-toc-title="pip-audit">
+        <h2>pip-audit</h2>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv add --dev pip-audit
+uv sync --locked
+uv run pip-audit</code></pre>
+      </section>
+      <section id="pip-licenses" data-toc data-toc-title="pip-licenses">
+        <h2>pip-licenses</h2>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv add --dev pip-licenses
+uv run pip-licenses --format=markdown --output-file=licenses.md</code></pre>
+      </section>
+      <section id="dependency-review" data-toc data-toc-title="依存追加時のレビュー観点">
+        <h2>依存追加時のレビュー観点</h2>
+        <ul>
+          <li>依存名が社内標準や既存依存と重複・類似していないか。</li>
+          <li>typosquatting らしい名前ではないか。</li>
+          <li>公開直後のパッケージや、メンテナ変更直後のパッケージではないか。</li>
+          <li><code>uv.lock</code> の差分が依存追加の目的に対して妥当か。</li>
+        </ul>
+      </section>
+      <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation"></nav>

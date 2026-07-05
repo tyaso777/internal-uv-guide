@@ -1,0 +1,80 @@
+<header class="hero">
+        <h1>clone・コピーした uv プロジェクトの始め方</h1>
+        <p>uv 対応済みの既存プロジェクトを取得し、lock file を尊重して手元で動かす流れを示します。</p>
+      </header>
+
+      <section class="chapter-intro" aria-label="このページの目的">
+        <h2>ページ概要</h2>
+        <p>このページの目的は、uv 対応済みの既存プロジェクトを clone またはコピーし、手元の端末で同期して動作確認することです。既存の <code>uv.lock</code> を尊重し、意図しない依存更新を避けながら環境を再現します。</p>
+      </section>
+      <section id="copy-or-clone" data-toc data-toc-title="プロジェクトを取得する">
+        <h2>プロジェクトを取得する</h2>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">git clone https://github.com/example/my-app.git
+cd my-app</code></pre>
+        <aside class="callout callout-info">
+        <div class="callout-label">Note</div>フォルダをコピーして始める場合も、<code>.venv</code> はコピーせず、手元で <code>uv sync</code> により再生成します。</aside>
+      </section>
+      <section id="network-session-settings" data-toc data-toc-title="ネットワーク設定を適用する">
+        <h2>ネットワーク設定を適用する</h2>
+        <p>依存パッケージ取得時に社内 proxy や社内 CA が必要な場合は、同期前にこの PowerShell セッションへ設定します。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell"># proxy をこの PowerShell セッションに設定する
+$env:HTTP_PROXY="http://proxy.example.co.jp:8080"
+$env:HTTPS_PROXY="http://proxy.example.co.jp:8080"
+
+# OS の証明書ストアをこの PowerShell セッションで利用する
+$env:UV_SYSTEM_CERTS="1"
+
+# 設定された値を確認する
+echo $env:HTTP_PROXY
+echo $env:HTTPS_PROXY
+echo $env:UV_SYSTEM_CERTS</code></pre>
+      </section>
+      <section id="check-python-version" data-toc data-toc-title="Python バージョン指定を確認する">
+        <h2>Python バージョン指定を確認する</h2>
+        <p><code>.python-version</code> と <code>pyproject.toml</code> の <code>requires-python</code> を確認し、プロジェクトが想定する Python バージョンで同期します。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">Get-Content .python-version
+Select-String -Path pyproject.toml -Pattern "requires-python"</code></pre>
+      </section>
+      <section id="set-project-environment" data-toc data-toc-title="仮想環境の作成先を設定する">
+        <h2>仮想環境の作成先を設定する</h2>
+        <p>共有フォルダ上で作業する場合は、<code>uv sync</code> の前に <code>UV_PROJECT_ENVIRONMENT</code> を設定します。clone またはコピーしたプロジェクトでは、現在いるプロジェクトフォルダ名と保存場所から、このプロジェクト用の仮想環境パスを作ります。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell"># プロジェクトフォルダの絶対パスを取得する
+$projectRoot=(Resolve-Path .).Path
+
+# プロジェクト名を現在のフォルダ名から取得する
+$projectName=Split-Path -Leaf $projectRoot
+
+# 同じプロジェクト名の仮想環境と衝突しないように、
+# プロジェクトの保存場所をもとに短いハッシュを作る
+$normalizedProjectRoot=$projectRoot.ToLowerInvariant()
+$sha256=[System.Security.Cryptography.SHA256]::Create()
+$hashBytes=$sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($normalizedProjectRoot))
+$hash=([System.BitConverter]::ToString($hashBytes) -replace "-", "").Substring(0,8).ToLowerInvariant()
+
+# 仮想環境の作成先を、このプロジェクト用のローカルフォルダに設定する
+$env:UV_PROJECT_ENVIRONMENT="$env:USERPROFILE\.uv\venvs\$projectName-$hash"
+
+# 設定された仮想環境の場所を確認する
+echo $env:UV_PROJECT_ENVIRONMENT</code></pre>
+      </section>
+      <section id="sync-environment" data-toc data-toc-title="環境を同期する">
+        <h2>環境を同期する</h2>
+        <p>既存の lock file を使って環境を再現します。通常の利用開始時は lock file を更新しません。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv sync --locked</code></pre>
+      </section>
+      <section id="verify-project" data-toc data-toc-title="動作確認する">
+        <h2>動作確認する</h2>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv run python --version
+uv run pytest</code></pre>
+      </section>
+      <section id="lock-file-policy" data-toc data-toc-title="lock file 更新の扱い">
+        <h2>lock file 更新の扱い</h2>
+        <p>利用開始だけが目的の場合は <code>uv.lock</code> を更新しません。依存追加やバージョン更新が目的の場合だけ、変更理由を明確にして lock file を更新します。</p>
+      </section>
+      <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation"></nav>

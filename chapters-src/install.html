@@ -1,0 +1,43 @@
+<header class="hero">
+        <h1>uv のインストール</h1>
+        <p>社内標準の uv バージョンを Windows 端末へ導入し、uv コマンドを利用できる状態にします。</p>
+      </header>
+
+      <section class="chapter-intro" aria-label="このページの目的">
+        <h2>ページ概要</h2>
+        <p>このページの目的は、社内標準の uv バージョンを Windows 端末へ導入し、<code>uv --version</code> で利用可能な状態にすることです。社内 proxy が必要な環境を前提に、proxy 設定の確認、PowerShell セッションへの proxy 設定、バージョンを指定したインストール、インストール確認の順に実施します。</p>
+        <p>会社の端末管理ルールにより、外部サイトからのインストーラ取得、PowerShell スクリプト実行、開発ツール導入に申請や承認が必要な場合があります。インストール作業の前に、IT 部門への申請や必要な事前対応を済ませてから実行します。</p>
+      </section>
+      <section id="prerequisites" data-toc data-toc-title="proxy 設定を確認する">
+        <h2>proxy 設定を確認する</h2>
+        <p>Windows 端末では、まず WinHTTP proxy の設定を確認します。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">netsh winhttp show proxy</code></pre>
+      </section>
+      <section id="proxy-settings" data-toc data-toc-title="proxy を設定する">
+        <h2>proxy を設定する</h2>
+        <p>社内 proxy を利用する場合は、インストーラを実行する前に PowerShell セッションへ proxy を設定します。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell"># proxy をこの PowerShell セッションに設定する
+$env:HTTP_PROXY="http://proxy.example.co.jp:8080"
+$env:HTTPS_PROXY="http://proxy.example.co.jp:8080"</code></pre>
+      </section>
+      <section id="versioned-install" data-toc data-toc-title="uv のバージョンを指定してインストールする">
+        <h2>uv のバージョンを指定してインストールする</h2>
+        <p>社内標準の uv バージョンを指定してインストールします。開発者間で uv のバージョンを揃えることで、コマンド挙動や lock file 更新時の差分を説明しやすくなります。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">$uvVersion="0.11.8"
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/$uvVersion/install.ps1 | iex"</code></pre>
+        <aside class="callout callout-warning">
+        <div class="callout-label">Warning</div>uv 本体は、社内で確認済みの標準バージョンを社内ポータルやセットアップスクリプトで明示します。</aside>
+        <aside class="callout callout-info">
+        <div class="callout-label">Note</div>検証用端末や一時的な確認では、バージョンを指定せずに <code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code> を実行することもできます。社内標準の開発環境では、上記のバージョン指定インストールを使います。</aside>
+      </section>
+      <section id="verify-install" data-toc data-toc-title="インストール確認">
+        <h2>インストール確認</h2>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv --version
+uv help
+uv python list</code></pre>
+      </section>
+      <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation"></nav>

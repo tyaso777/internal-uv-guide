@@ -134,6 +134,65 @@ main()
       indexUrl: "https://cdn.jsdelivr.net/pyodide/v0.29.3/full/"
     };
 
+    function normalizePyodideAssetUrl(value, label) {
+      if (typeof value !== "string" || value.trim() === "") {
+        throw new Error(`Invalid Pyodide ${label} URL.`);
+      }
+
+      const url = new URL(value, window.location.href);
+      if (url.protocol !== "https:" && url.origin !== window.location.origin) {
+        throw new Error(`Pyodide ${label} URL must be HTTPS or same-origin.`);
+      }
+
+      return url.href;
+    }
+
+    const LAYOUT_MODE_STORAGE_KEY = "technicalDocLayoutMode";
+
+    function defaultLayoutMode() {
+      return window.technicalDocDefaultLayoutMode === "wide" ? "wide" : "standard";
+    }
+
+    function storedLayoutMode() {
+      try {
+        const savedMode = window.localStorage.getItem(LAYOUT_MODE_STORAGE_KEY);
+        return savedMode === "wide" || savedMode === "standard" ? savedMode : defaultLayoutMode();
+      } catch (error) {
+        return defaultLayoutMode();
+      }
+    }
+
+    function setLayoutMode(mode) {
+      const isWide = mode === "wide";
+      document.documentElement.classList.toggle("layout-wide", isWide);
+      document.body.classList.toggle("layout-wide", isWide);
+
+      try {
+        window.localStorage.setItem(LAYOUT_MODE_STORAGE_KEY, mode);
+      } catch (error) {
+        // Ignore storage errors so the control still works for the current page.
+      }
+    }
+
+    function initializeLayoutModeControl() {
+      const controls = Array.from(document.querySelectorAll('input[name="layout-mode"]'));
+      if (controls.length === 0) {
+        return;
+      }
+
+      const mode = storedLayoutMode();
+      setLayoutMode(mode);
+
+      for (const control of controls) {
+        control.checked = control.value === mode;
+        control.addEventListener("change", () => {
+          if (control.checked) {
+            setLayoutMode(control.value);
+          }
+        });
+      }
+    }
+
     function initializeMermaid() {
       if (window.mermaid) {
         window.mermaid.initialize({
@@ -149,122 +208,39 @@ main()
       }
     }
 
-    function getTocTitle(element) {
-      if (element.dataset.tocTitle) {
-        return element.dataset.tocTitle;
+    function initializeVegaLite() {
+      if (!window.vegaEmbed) {
+        return;
       }
 
-      const heading = element.matches("section")
-        ? element.querySelector("h2, h3")
-        : element;
+      for (const target of document.querySelectorAll("[data-vega-lite]")) {
+        const specId = target.dataset.vegaLiteSpec;
+        const specElement = specId ? document.getElementById(specId) : null;
 
-      return heading ? heading.textContent.trim() : element.id;
-    }
-
-    function getTocHref(element) {
-      return `#${element.id}`;
-    }
-
-    function getTocLevel(element) {
-      if (element.dataset.tocLevel) {
-        return Number.parseInt(element.dataset.tocLevel, 10);
-      }
-
-      if (element.matches("h3")) {
-        return 3;
-      }
-
-      return 2;
-    }
-
-    function createTocItem(element) {
-      const item = document.createElement("li");
-      const link = document.createElement("a");
-      const level = getTocLevel(element);
-
-      link.href = getTocHref(element);
-      link.textContent = getTocTitle(element);
-
-      if (level >= 3) {
-        item.classList.add(`toc-level-${level}`);
-      }
-
-      item.appendChild(link);
-      return item;
-    }
-
-    function getOrCreateChildList(item) {
-      let childList = item.querySelector(":scope > ol");
-
-      if (!childList) {
-        childList = document.createElement("ol");
-        item.appendChild(childList);
-      }
-
-      return childList;
-    }
-
-    function buildNestedToc(toc, tocTargets) {
-      const stack = [
-        {
-          level: 1,
-          list: toc,
-          item: null
-        }
-      ];
-
-      for (const target of tocTargets) {
-        const level = getTocLevel(target);
-        const item = createTocItem(target);
-
-        while (stack.length > 1 && stack[stack.length - 1].level >= level) {
-          stack.pop();
+        if (!specElement) {
+          target.textContent = "Vega-Lite spec was not found.";
+          continue;
         }
 
-        let parent = stack[stack.length - 1];
+        let spec;
 
-        if (level > parent.level + 1 && parent.item) {
-          const childList = getOrCreateChildList(parent.item);
-          parent = {
-            level: level - 1,
-            list: childList,
-            item: parent.item
-          };
-          stack.push(parent);
+        try {
+          const specText = specElement.content
+            ? specElement.content.textContent
+            : specElement.textContent;
+          spec = JSON.parse(specText);
+        } catch (error) {
+          target.textContent = `Vega-Lite spec error: ${error.message}`;
+          continue;
         }
 
-        parent.list.appendChild(item);
-
-        stack.push({
-          level,
-          list: getOrCreateChildList(item),
-          item
+        window.vegaEmbed(target, spec, {
+          actions: false,
+          renderer: "svg"
+        }).catch((error) => {
+          target.textContent = `Vega-Lite render error: ${error.message || error}`;
         });
       }
-
-      for (const emptyList of toc.querySelectorAll("ol:empty")) {
-        emptyList.remove();
-      }
-    }
-
-    function buildToc() {
-      const toc = document.getElementById("auto-toc");
-
-      if (!toc) {
-        return;
-      }
-
-      const tocTargets = Array.from(document.querySelectorAll("main [data-toc][id]"));
-      toc.innerHTML = "";
-
-      if (tocTargets.length === 0) {
-        const item = document.createElement("li");
-        item.textContent = "No TOC targets found. Add data-toc to structural sections or headings.";
-        toc.appendChild(item);
-        return;
-      }
-
-      buildNestedToc(toc, tocTargets);
     }
 
     function initializePythonRunner(panel) {
@@ -358,9 +334,12 @@ main()
           return pyodideWorker;
         }
 
+        const pyodideScriptUrl = normalizePyodideAssetUrl(PYODIDE_WORKER_CONFIG.scriptUrl, "script");
+        const pyodideIndexUrl = normalizePyodideAssetUrl(PYODIDE_WORKER_CONFIG.indexUrl, "index");
+
         const workerSource = `
-        const pyodideScriptUrl = "${PYODIDE_WORKER_CONFIG.scriptUrl}";
-        const pyodideIndexUrl = "${PYODIDE_WORKER_CONFIG.indexUrl}";
+        const pyodideScriptUrl = ${JSON.stringify(pyodideScriptUrl)};
+        const pyodideIndexUrl = ${JSON.stringify(pyodideIndexUrl)};
 
         importScripts(pyodideScriptUrl);
         let pyodideReadyPromise = null;
@@ -816,9 +795,135 @@ except BaseException:
       }
     }
 
+    function initializeTableCaptions() {
+      const wrappers = Array.from(document.querySelectorAll(".table-wrap"));
+      if (wrappers.length === 0) {
+        return;
+      }
+
+      const updateCaptionOffset = (wrapper) => {
+        const tableCaption = wrapper.querySelector(".table-caption");
+        wrapper.style.setProperty("--table-caption-sticky-offset", tableCaption ? `${tableCaption.offsetHeight}px` : "0px");
+        const tableHeader = wrapper.querySelector("thead");
+        wrapper.style.setProperty("--table-header-sticky-offset", tableHeader ? `${tableHeader.offsetHeight}px` : "0px");
+      };
+
+      for (const wrapper of wrappers) {
+        const table = wrapper.querySelector("table");
+        const caption = table ? table.querySelector("caption") : null;
+        if (!table || !caption) {
+          updateCaptionOffset(wrapper);
+          continue;
+        }
+
+        const tableCaption = document.createElement("div");
+        tableCaption.className = "table-caption";
+        tableCaption.innerHTML = caption.innerHTML;
+        if (table.id) {
+          tableCaption.id = `${table.id}-caption`;
+          if (!table.hasAttribute("aria-labelledby")) {
+            table.setAttribute("aria-labelledby", tableCaption.id);
+          }
+        }
+
+        caption.remove();
+        wrapper.insertBefore(tableCaption, table);
+        updateCaptionOffset(wrapper);
+      }
+
+      window.addEventListener("resize", () => {
+        for (const wrapper of wrappers) {
+          updateCaptionOffset(wrapper);
+        }
+      });
+    }
+
+    function initializeTableScrollHints() {
+      const wrappers = Array.from(document.querySelectorAll(".table-wrap.table-wide, .table-wrap.table-fixed-height"));
+      if (wrappers.length === 0) {
+        return;
+      }
+
+      const ensureFrame = (wrapper) => {
+        if (wrapper.parentElement && wrapper.parentElement.classList.contains("table-scroll-frame")) {
+          return wrapper.parentElement;
+        }
+
+        const frame = document.createElement("div");
+        frame.className = "table-scroll-frame";
+        wrapper.parentNode.insertBefore(frame, wrapper);
+        frame.appendChild(wrapper);
+        return frame;
+      };
+
+      const ensureShadow = (frame, className) => {
+        let shadow = frame.querySelector(`:scope > .${className}`);
+        if (!shadow) {
+          shadow = document.createElement("span");
+          shadow.className = `table-scroll-shadow ${className}`;
+          shadow.setAttribute("aria-hidden", "true");
+          frame.insertBefore(shadow, frame.firstChild);
+        }
+        return shadow;
+      };
+
+      const updateWrapper = (wrapper) => {
+        const frame = wrapper.parentElement && wrapper.parentElement.classList.contains("table-scroll-frame")
+          ? wrapper.parentElement
+          : wrapper;
+        const captionOffset = window.getComputedStyle(wrapper).getPropertyValue("--table-caption-sticky-offset") || "0px";
+        const headerOffset = window.getComputedStyle(wrapper).getPropertyValue("--table-header-sticky-offset") || "0px";
+        const table = wrapper.querySelector("table");
+        const maxScrollTop = wrapper.scrollHeight - wrapper.clientHeight;
+        const hasVerticalOverflow = maxScrollTop > 1;
+        const verticalScrollbarWidth = hasVerticalOverflow ? Math.max(18, wrapper.offsetWidth - wrapper.clientWidth) : 0;
+        frame.style.setProperty("--table-caption-sticky-offset", captionOffset.trim());
+        frame.style.setProperty("--table-header-sticky-offset", headerOffset.trim());
+        frame.style.setProperty("--table-body-scroll-height", table ? `${table.offsetHeight}px` : `${wrapper.clientHeight}px`);
+        frame.style.setProperty("--table-vertical-scrollbar-width", `${verticalScrollbarWidth}px`);
+
+        if (wrapper.classList.contains("table-wide")) {
+          const maxScrollLeft = wrapper.scrollWidth - wrapper.clientWidth;
+          const hasLess = maxScrollLeft > 1 && wrapper.scrollLeft > 1;
+          const hasMore = maxScrollLeft > 1 && wrapper.scrollLeft < maxScrollLeft - 1;
+          frame.classList.toggle("has-scroll-x-less", hasLess);
+          frame.classList.toggle("has-scroll-x-more", hasMore);
+        }
+
+        if (wrapper.classList.contains("table-fixed-height")) {
+          const hasLess = maxScrollTop > 1 && wrapper.scrollTop > 1;
+          const hasMore = maxScrollTop > 1 && wrapper.scrollTop < maxScrollTop - 1;
+          frame.classList.toggle("has-scroll-y-less", hasLess);
+          frame.classList.toggle("has-scroll-y-more", hasMore);
+        }
+      };
+
+      for (const wrapper of wrappers) {
+        const frame = ensureFrame(wrapper);
+
+        if (wrapper.classList.contains("table-wide")) {
+          ensureShadow(frame, "table-scroll-shadow-x-left");
+          ensureShadow(frame, "table-scroll-shadow-x-right");
+        }
+
+        if (wrapper.classList.contains("table-fixed-height")) {
+          ensureShadow(frame, "table-scroll-shadow-y-top");
+          ensureShadow(frame, "table-scroll-shadow-y-bottom");
+        }
+
+        updateWrapper(wrapper);
+        wrapper.addEventListener("scroll", () => updateWrapper(wrapper), { passive: true });
+      }
+
+      window.addEventListener("resize", () => {
+        for (const wrapper of wrappers) {
+          updateWrapper(wrapper);
+        }
+      });
+    }
+
 
     document.addEventListener("DOMContentLoaded", () => {
-      buildToc();
       const runners = Array.from(document.querySelectorAll("[data-python-runner-panel]"));
 
       for (const runner of runners) {
@@ -831,5 +936,9 @@ except BaseException:
         window.Prism.highlightAll();
       }
       initializeCodeCopyButtons();
+      initializeTableCaptions();
+      initializeTableScrollHints();
+      initializeLayoutModeControl();
       initializeMermaid();
+      initializeVegaLite();
     });

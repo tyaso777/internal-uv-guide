@@ -1,27 +1,86 @@
 <!doctype html>
 <html lang="ja">
 <head>
+<!--
+  Security note:
+  Browser-loaded CDN script and stylesheet assets are pinned with SRI and
+  crossorigin="anonymous". Pyodide is loaded separately inside a Web Worker;
+  see README.md for the importScripts() SRI limitation.
+-->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>社内で uv を使うための導入・移行・運用ガイド - 社内 uv 利用ガイド</title>
+  <meta name="description" content="社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。">
+  <meta property="og:title" content="社内で uv を使うための導入・移行・運用ガイド">
+  <meta property="og:description" content="社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="社内 uv 利用ガイド">
+  <title>社内で uv を使うための導入・移行・運用ガイド</title>
+
+  <!-- Library config -->
+  <script>
+    window.technicalDocDefaultLayoutMode = "standard";
+
+    try {
+      const savedLayoutMode = window.localStorage ? window.localStorage.getItem("technicalDocLayoutMode") : null;
+      const initialLayoutMode = savedLayoutMode || window.technicalDocDefaultLayoutMode;
+      if (initialLayoutMode === "wide") {
+        document.documentElement.classList.add("layout-wide");
+      }
+    } catch (error) {
+      document.documentElement.classList.remove("layout-wide");
+    }
+
+    window.Prism = window.Prism || {};
+    window.Prism.manual = true;
+
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: true
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+
+  <!-- External libraries -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.css" integrity="sha512-cbQXwDFK7lj2Fqfkuxbo5iD1dSbLlJGXGpfTDqbggqjHJeyzx88I3rfwjS38WJag/ihH7lzuGlGHpDBymLirZQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/prism.min.js" integrity="sha512-HiD3V4nv8fcjtouznjT9TqDNDm1EXngV331YGbfVGeKUoH+OLkRTCMzA34ecjlgSQZpdHZupdSrqHY+Hz3l6uQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-python.min.js" integrity="sha512-AKaNmg8COK0zEbjTdMHJAPJ0z6VeNqvRvH4/d5M4sHJbQQUToMBtodq4HaV4fa+WV2UTfoperElm66c9/8cKmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-powershell.min.js" integrity="sha512-mNRS5mGSidY0juPNlXC17z6atUusuE8Fdbu5+zK6drBDbroYeaEfudGKSRoFvRpzseJq2v3bNOwpEFHi6L82Aw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-java.min.js" integrity="sha512-xKcnbsdT0KMoA4yrozkqZM1XJVTrPsjdQwvigxlAlxEDu8YDvC/jl+LfVqn0fY3Vs6m2y4a89JCHEIA/Z9zpmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-sql.min.js" integrity="sha512-sijCOJblSCXYYmXdwvqV0tak8QJW5iy2yLB1wAbbLc3OOIueqymizRFWUS/mwKctnzPKpNdPJV3aK1zlDMJmXQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-mermaid.min.js" integrity="sha512-TWvtkke2tZtIQOA5/sjGM0S2RCMLTxhLKh0zYvhHdhVQizOaPcF9uYa+szt+kun01TCUVALUcVxlta8fjwt1jQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/line-numbers/prism-line-numbers.min.js" integrity="sha512-BttltKXFyWnGZQcRWj6osIg7lbizJchuAMotOkdLxHxwt/Hyo+cl47bZU0QADg+Qt5DJwni3SbYGXeGMB5cBcw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" integrity="sha256-1CldwzdEg2k1wTmf7s5RWVd7NMXI/7nxxjJM2C4DqII=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js" integrity="sha512-OeZ4Yrb/W7d2W4rAMOO0HQ9Ro/aWLtpW9BUSR2UOWnSV2hprXLkkYnnCGc9NeLUxxE4ZG7zN16UuT1Elqq8Opg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js" integrity="sha512-Vs2GKxnxnTQBRW7o2xXZ9A28njjmu5RToS42efiKNEWmikov0inZY522EtGVK5CcVo0M/FQwmXsTfl9skgRnvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
   <link rel="stylesheet" href="assets/css/technical-doc.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
 </head>
-<body>
+
+<body class="line-numbers document-page">
+  <a class="skip-link" href="#main">Skip to main content</a>
+
   <div class="layout">
-    
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Document navigation">
       <header class="sidebar-header" aria-labelledby="sidebar-title">
-        <h2 id="sidebar-title" class="sidebar-title">社内 uv 利用ガイド</h2>
+        <h2 id="sidebar-title" class="sidebar-title">概要</h2>
         <p class="sidebar-subtitle">Poetry + pyenv から uv へ移行するための標準手順</p>
       </header>
+
       <details class="nav-section" open>
         <summary>Contents</summary>
         <div class="nav-body">
           <ol class="nav-list site-contents-tree">
             <li class="site-contents-chapter">
               <details open>
-                <summary><a href="index.html" aria-current="page">概要</a></summary>
+                <summary><a href="index.html" aria-current="page">社内で uv を使うための導入・移行・運用ガイド</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="index.html#purpose">1. 目的</a>
                   </li>
@@ -36,7 +95,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="install.html">インストール</a></summary>
+                <summary><a href="install.html">uv のインストール</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="install.html#prerequisites">1. proxy 設定を確認する</a>
                   </li>
@@ -51,7 +110,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="setup.html">ネットワーク設定の基本</a></summary>
+                <summary><a href="setup.html">uv のネットワーク設定の基本</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="setup.html#proxy-check">1. proxy の確認</a>
                   </li>
@@ -70,7 +129,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="usage.html">基本操作と概念</a></summary>
+                <summary><a href="usage.html">uv の基本操作と概念</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="usage.html#core-concepts">1. 主要概念</a>
                   </li>
@@ -90,9 +149,9 @@
                   </li>
                   <li><a href="usage.html#extras-markers-sources">9. extras・markers・特殊な依存</a>
                     <ol>
-                      <li><a href="usage.html#extras">9.1 extras</a></li>
-                      <li><a href="usage.html#environment-markers">9.2 environment markers</a></li>
-                      <li><a href="usage.html#direct-url-git-path">9.3 direct URL / Git / path</a></li>
+                      <li><a href="usage.html#extras">9.1. extras</a></li>
+                      <li><a href="usage.html#environment-markers">9.2. environment markers</a></li>
+                      <li><a href="usage.html#direct-url-git-path">9.3. direct URL / Git / path</a></li>
                     </ol>
                   </li>
                   <li><a href="usage.html#python-management">10. Python の管理</a>
@@ -140,7 +199,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="migration.html">Poetry + pyenv からの移行</a></summary>
+                <summary><a href="migration.html">Poetry + pyenv から uv へ移行する</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="migration.html#migration-goal">1. 移行のゴール</a>
                   </li>
@@ -163,7 +222,7 @@
             </li>
             <li class="site-contents-chapter">
               <details>
-                <summary><a href="security.html">セキュリティ運用</a></summary>
+                <summary><a href="security.html">uv 利用時のセキュリティ運用</a></summary>
                 <ol class="toc-tree toc-tree-numbered">
                   <li><a href="security.html#minimum-checks">1. 最低限入れるチェック</a>
                   </li>
@@ -179,74 +238,78 @@
           </ol>
         </div>
       </details>
-      <details class="nav-section" open>
-        <summary>References</summary>
+
+      <details class="nav-section layout-mode-section" open>
+        <summary>Layout</summary>
         <div class="nav-body">
-          <ol class="nav-list">
-            <li><a href="https://docs.astral.sh/uv/" target="_blank" rel="noreferrer">uv 公式ドキュメント</a></li>
-            <li><a href="https://github.com/tyaso777/html-doc-template" target="_blank" rel="noreferrer">html-doc-template</a></li>
-          </ol>
+          <fieldset class="layout-mode-control" aria-label="Layout width">
+            <label>
+              <input type="radio" name="layout-mode" value="standard" checked>
+              <span>Standard</span>
+            </label>
+            <label>
+              <input type="radio" name="layout-mode" value="wide">
+              <span>Wide</span>
+            </label>
+          </fieldset>
         </div>
       </details>
-    </aside>
-    <main class="content">
-      <header class="hero">
-        <h1>社内で uv を使うための導入・移行・運用ガイド</h1>
-        <p>社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。</p>
-      </header>
 
-      <section id="purpose" data-toc data-toc-title="目的">
-        <h2>1. 目的</h2>
-        <p>このガイドは、社内の Python 開発環境を uv ベースで導入・移行・運用するための標準手順をまとめたものです。Windows 端末、社内 proxy、社内 CA、社内パッケージリポジトリを利用する環境を主な対象にしています。</p>
-        <p>開発者が同じ手順で Python、仮想環境、依存関係、lock file、監査コマンドを扱えるようにし、ローカル環境の差分を小さくすることを目的とします。</p>
-      </section>
-      <section id="target-readers" data-toc data-toc-title="対象読者">
-        <h2>2. 対象読者</h2>
-        <ul>
-          <li>Python プロジェクトを新規に作成する開発者</li>
-          <li><code>pyenv + Poetry</code> 構成の既存プロジェクトを uv へ移行する担当者</li>
-          <li>社内 proxy、証明書、社内パッケージリポジトリを整備する担当者</li>
-          <li>依存パッケージの脆弱性監査やライセンス確認を運用する担当者</li>
-        </ul>
-      </section>
-      <section id="guide-map" data-toc data-toc-title="ガイド構成">
-        <h2>3. ガイド構成</h2>
-        <div class="table-wrap"><table><thead><tr><th>ページ</th><th>主な内容</th><th>読むタイミング</th></tr></thead><tbody><tr><td><a href="install.html">インストール</a></td><td>proxy 配下での導入、uv バージョン固定、導入確認</td><td>初回導入時</td></tr>
-<tr><td><a href="setup.html">ネットワーク設定の基本</a></td><td><code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code>、社内パッケージリポジトリ、依存解決の考え方</td><td>初回導入時、SSL エラー対応時</td></tr>
-<tr><td><a href="usage.html">基本操作と概念</a></td><td>プロジェクト、仮想環境、lock、sync、tool、pip 互換</td><td>日常開発</td></tr>
-<tr><td><a href="start-project.html">新規 uv プロジェクトの始め方</a></td><td>新規プロジェクト作成、Python バージョン固定、初回依存追加、初回実行</td><td>新規開発開始時</td></tr>
-<tr><td><a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a></td><td>clone / コピー後の同期、既存 lock file の利用、動作確認</td><td>既存 uv プロジェクト利用時</td></tr>
-<tr><td><a href="migration.html">Poetry + pyenv からの移行</a></td><td>対応表、移行手順、互換でない点</td><td>既存プロジェクト移行時</td></tr>
-<tr><td><a href="security.html">セキュリティ運用</a></td><td><code>pip-audit</code>、<code>pip-licenses</code>、依存追加時チェック</td><td>標準化、監査、リリース前</td></tr></tbody></table></div>
-      </section>
-      <section id="operational-assumptions" data-toc data-toc-title="運用上の前提">
-        <h2>4. 運用上の前提</h2>
-        <ul>
-          <li>uv 本体は、社内で確認済みの標準バージョンを利用します。</li>
-          <li>プロジェクトの Python バージョンは <code>.python-version</code> と <code>pyproject.toml</code> で明示します。</li>
-          <li>社内 proxy と証明書設定は、ユーザー環境変数で管理します。</li>
-          <li>依存パッケージの解決では、必要に応じて <code>--exclude-newer "X days"</code> を使い、公開直後のパッケージを避けます。</li>
-          <li>脆弱性監査とライセンス監査は、ローカルで実行できる形にします。</li>
-        </ul>
-      </section>
-      <nav class="chapter-nav" aria-label="ページ移動"><a class="chapter-nav-link next" href="install.html"><span>Next</span><strong>インストール</strong></a></nav>
-      <footer class="footer">最終更新: 2026-06-18</footer>
-      
-      <div class="visually-hidden" aria-hidden="true">
-        <textarea id="python-code"></textarea>
-        <button id="load-button" type="button">Load Python Runtime</button>
-        <button id="run-button" type="button">Run Python</button>
-        <button id="reset-button" type="button">Reset Code</button>
-        <button id="restart-runtime-button" type="button">Restart Python Runtime</button>
-        <pre id="output"></pre>
-        <span id="pyodide-status"></span>
-      </div>
+
+
+    </aside>
+
+    <main id="main" tabindex="-1">
+      <article class="content">
+        <header class="hero">
+                <h1>社内で uv を使うための導入・移行・運用ガイド</h1>
+                <p>社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。</p>
+              </header>
+
+              <section id="purpose" data-toc data-toc-title="目的">
+                <h2>1. 目的</h2>
+                <p>このガイドは、社内の Python 開発環境を uv ベースで導入・移行・運用するための標準手順をまとめたものです。Windows 端末、社内 proxy、社内 CA、社内パッケージリポジトリを利用する環境を主な対象にしています。</p>
+                <p>開発者が同じ手順で Python、仮想環境、依存関係、lock file、監査コマンドを扱えるようにし、ローカル環境の差分を小さくすることを目的とします。</p>
+              </section>
+              <section id="target-readers" data-toc data-toc-title="対象読者">
+                <h2>2. 対象読者</h2>
+                <ul>
+                  <li>Python プロジェクトを新規に作成する開発者</li>
+                  <li><code>pyenv + Poetry</code> 構成の既存プロジェクトを uv へ移行する担当者</li>
+                  <li>社内 proxy、証明書、社内パッケージリポジトリを整備する担当者</li>
+                  <li>依存パッケージの脆弱性監査やライセンス確認を運用する担当者</li>
+                </ul>
+              </section>
+              <section id="guide-map" data-toc data-toc-title="ガイド構成">
+                <h2>3. ガイド構成</h2>
+                <div class="table-wrap"><table><thead><tr><th>ページ</th><th>主な内容</th><th>読むタイミング</th></tr></thead><tbody><tr><td><a href="install.html">インストール</a></td><td>proxy 配下での導入、uv バージョン固定、導入確認</td><td>初回導入時</td></tr>
+        <tr><td><a href="setup.html">ネットワーク設定の基本</a></td><td><code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code>、社内パッケージリポジトリ、依存解決の考え方</td><td>初回導入時、SSL エラー対応時</td></tr>
+        <tr><td><a href="usage.html">基本操作と概念</a></td><td>プロジェクト、仮想環境、lock、sync、tool、pip 互換</td><td>日常開発</td></tr>
+        <tr><td><a href="start-project.html">新規 uv プロジェクトの始め方</a></td><td>新規プロジェクト作成、Python バージョン固定、初回依存追加、初回実行</td><td>新規開発開始時</td></tr>
+        <tr><td><a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a></td><td>clone / コピー後の同期、既存 lock file の利用、動作確認</td><td>既存 uv プロジェクト利用時</td></tr>
+        <tr><td><a href="migration.html">Poetry + pyenv からの移行</a></td><td>対応表、移行手順、互換でない点</td><td>既存プロジェクト移行時</td></tr>
+        <tr><td><a href="security.html">セキュリティ運用</a></td><td><code>pip-audit</code>、<code>pip-licenses</code>、依存追加時チェック</td><td>標準化、監査、リリース前</td></tr></tbody></table></div>
+              </section>
+              <section id="operational-assumptions" data-toc data-toc-title="運用上の前提">
+                <h2>4. 運用上の前提</h2>
+                <ul>
+                  <li>uv 本体は、社内で確認済みの標準バージョンを利用します。</li>
+                  <li>プロジェクトの Python バージョンは <code>.python-version</code> と <code>pyproject.toml</code> で明示します。</li>
+                  <li>社内 proxy と証明書設定は、ユーザー環境変数で管理します。</li>
+                  <li>依存パッケージの解決では、必要に応じて <code>--exclude-newer "X days"</code> を使い、公開直後のパッケージを避けます。</li>
+                  <li>脆弱性監査とライセンス監査は、ローカルで実行できる形にします。</li>
+                </ul>
+              </section>
+              <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation">
+                <a class="chapter-nav-link next" href="install.html">
+                  <span>Next</span>
+                  <strong>uv のインストール</strong>
+                </a>
+              </nav>
+      </article>
     </main>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-powershell.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-toml.min.js"></script>
-  <script src="assets/js/technical-doc.js"></script>
+
+  <script defer src="assets/js/technical-doc.js"></script>
 </body>
 </html>

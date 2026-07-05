@@ -1,0 +1,106 @@
+<header class="hero">
+        <h1>Poetry + pyenv から uv へ移行する</h1>
+        <p>Poetry + pyenv 構成の既存プロジェクトを uv ベースの運用へ移行する手順を整理します。</p>
+      </header>
+
+      <section class="chapter-intro" aria-label="このページの目的">
+        <h2>ページ概要</h2>
+        <p>このページの目的は、Poetry + pyenv を前提にした既存プロジェクトを uv ベースの運用へ移行する手順と判断点を整理することです。単にコマンドを置き換えるのではなく、Python バージョン、仮想環境、依存解決、lock file の扱いを揃えることを目的にします。</p>
+      </section>
+      <section id="migration-goal" data-toc data-toc-title="移行のゴール">
+        <h2>移行のゴール</h2>
+        <p>Poetry + pyenv から uv へ移行する目的は、単にコマンド名を置き換えることではありません。Python バージョン、仮想環境、依存解決、lock file の扱いを uv に揃え、開発者ごとの環境差分を減らすことがゴールです。</p>
+        <aside class="callout callout-warning">
+        <div class="callout-label">Warning</div>移行 PR では、<code>poetry.lock</code> から <code>uv.lock</code> へ lock file が変わるため差分が大きくなります。依存追加や大きなバージョン更新とは別 PR に分け、移行そのものの差分をレビューしやすくします。</aside>
+      </section>
+      <section id="command-mapping" data-toc data-toc-title="コマンド対応表">
+        <h2>コマンド対応表</h2>
+        <div class="table-wrap"><table><thead><tr><th>現在</th><th>uv</th><th>補足</th></tr></thead><tbody><tr><td><code>pyenv install 3.11.9</code></td><td><code>uv python install 3.11.9</code></td><td>uv で利用できる Python バージョンに限る。</td></tr>
+<tr><td><code>pyenv local 3.11.9</code></td><td><code>uv python pin 3.11.9</code></td><td><code>.python-version</code> を作成または更新する。</td></tr>
+<tr><td><code>poetry init</code></td><td><code>uv init</code></td><td>既存プロジェクトでは上書きに注意する。</td></tr>
+<tr><td><code>poetry add requests</code></td><td><code>uv add requests</code></td><td><code>pyproject.toml</code> と <code>uv.lock</code> を更新する。</td></tr>
+<tr><td><code>poetry add --group dev pytest</code></td><td><code>uv add --dev pytest</code></td><td>開発用依存として追加する。</td></tr>
+<tr><td><code>poetry install</code></td><td><code>uv sync</code></td><td>lock file に合わせて仮想環境を作る。</td></tr>
+<tr><td><code>poetry run pytest</code></td><td><code>uv run pytest</code></td><td>プロジェクト環境で実行する。</td></tr>
+<tr><td><code>poetry lock</code></td><td><code>uv lock</code></td><td><code>poetry.lock</code> ではなく <code>uv.lock</code> を生成する。</td></tr>
+<tr><td><code>poetry env info</code></td><td><code>uv run python -c ...</code></td><td>必要なら <code>sys.executable</code> や <code>sys.version</code> を確認する。</td></tr></tbody></table></div>
+      </section>
+      <section id="migration-policy" data-toc data-toc-title="移行方針を決める">
+        <h2>移行方針を決める</h2>
+        <p>手を動かす前に、移行後の標準を明確にします。ここが曖昧だと、他メンバーの環境で差分が出ます。</p>
+        <ul>
+          <li>Python バージョンは既存の <code>.python-version</code> を維持するか、移行と同時に変更するか。</li>
+          <li>uv 本体の標準バージョンを何にするか。</li>
+          <li>依存解決時の <code>--exclude-newer "X days"</code> を標準にするか。</li>
+          <li>社内パッケージリポジトリの参照先を <code>pyproject.toml</code> に書くか、ユーザーの uv 設定に置くか。</li>
+          <li>Poetry 固有の package 設定や scripts を uv / PEP 621 形式へ移す範囲。</li>
+        </ul>
+      </section>
+      <section id="local-migration" data-toc data-toc-title="ローカルで移行する">
+        <h2>ローカルで移行する</h2>
+        <p>まず uv で Python を固定し、lock file を作り、テストが通るところまで確認します。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv python pin 3.12
+uv lock --exclude-newer "7 days"
+uv sync
+uv run python --version
+uv run pytest</code></pre>
+        <aside class="callout callout-warning">
+        <div class="callout-label">Warning</div><code>uv lock</code> は <code>poetry.lock</code> をそのまま変換するコマンドではありません。<code>pyproject.toml</code> の依存定義から uv が新しく解決し、<code>uv.lock</code> を生成します。</aside>
+      </section>
+      <section id="pyproject-adjustments" data-toc data-toc-title="pyproject.toml を調整する">
+        <h2>pyproject.toml を調整する</h2>
+        <p>Poetry だけが読む設定と、PEP 621 / uv が読む設定を分けて確認します。既存の <code>[tool.ruff]</code>、<code>[tool.pytest.ini_options]</code>、<code>[tool.mypy]</code> などのツール設定は基本的にそのまま維持します。</p>
+        <ul>
+          <li><code>[project]</code> の <code>requires-python</code> が実際の Python バージョンと合っているか確認する。</li>
+          <li>runtime dependency と dev dependency が正しいグループに入っているか確認する。</li>
+          <li>Poetry の scripts を使っている場合、<code>[project.scripts]</code> へ移せるか確認する。</li>
+          <li>社内パッケージリポジトリの URL に認証情報を直接書いていないか確認する。</li>
+          <li>パッケージとして配布しないアプリケーションなら、build 設定が不要か確認する。</li>
+        </ul>
+        <p>Poetry では <code>[tool.poetry.dependencies]</code> に TOML テーブル形式で依存を書くことがありますが、uv では通常 <code>[project].dependencies</code> に PEP 508 文字列として記録します。Poetry の <code>^2.2</code> のような caret requirement は、<code>&gt;=2.2,&lt;3</code> のように範囲指定へ展開します。依存追加は <code>uv add "pandas&gt;=2.2,&lt;3"</code> のように行い、記法の詳細は <a href="usage.html#pyproject-dependency-notation">pyproject.toml のライブラリ記法</a> と <a href="usage.html#poetry-caret-notation">Poetry の ^ 記法との対応</a> を参照します。</p>
+        <div class="table-wrap"><table><thead><tr><th>Poetry 形式の例</th><th>uv / PEP 621 形式の例</th></tr></thead><tbody><tr><td><code>pandas = "^2.2"</code></td><td><code>"pandas&gt;=2.2,&lt;3"</code></td></tr>
+<tr><td><code>python = "&gt;=3.11,&lt;3.13"</code></td><td><code>requires-python = "&gt;=3.11,&lt;3.13"</code></td></tr>
+<tr><td><code>pytest = &#123; group = "dev", version = "^8" &#125;</code></td><td><code>[dependency-groups].dev = ["pytest&gt;=8"]</code></td></tr>
+<tr><td><code>fastapi = &#123; extras = ["standard"], version = "^0.115" &#125;</code></td><td><code>"fastapi[standard]&gt;=0.115"</code></td></tr></tbody></table></div>
+      </section>
+      <section id="verification" data-toc data-toc-title="動作確認する">
+        <h2>動作確認する</h2>
+        <p>Poetry で実行していたチェックを uv 経由に置き換え、同じ結果になるか確認します。</p>
+        <div class="code-caption">powershell</div>
+<pre class="code-block language-powershell"><code class="language-powershell">uv sync --locked
+uv run pytest
+uv run ruff check .
+uv run python -m pip check
+uv tree</code></pre>
+        <p>確認すべき観点:</p>
+        <ul>
+          <li>テスト結果が Poetry 環境と一致するか。</li>
+          <li>CLI entry point やアプリ起動コマンドが動くか。</li>
+          <li>Jupyter、pre-commit、IDE の interpreter 設定が <code>.venv</code> を参照できるか。</li>
+          <li>proxy / SSL / 社内パッケージリポジトリの設定で依存パッケージを取得できるか。</li>
+        </ul>
+      </section>
+      <section id="cleanup" data-toc data-toc-title="Poetry / pyenv 前提を整理する">
+        <h2>Poetry / pyenv 前提を整理する</h2>
+        <p>テストが通った後で、古い前提を整理します。先に消すと原因切り分けが難しくなるため、検証後に行います。</p>
+        <ul>
+          <li><code>poetry.lock</code> を削除し、<code>uv.lock</code> を追加する。</li>
+          <li>README の <code>poetry install</code>、<code>poetry run</code>、<code>pyenv install</code> を uv コマンドに置き換える。</li>
+          <li>pre-commit、開発者向けセットアップ手順から Poetry 前提を除く。</li>
+          <li><code>.python-version</code> は uv でも使うため、必要なら維持する。</li>
+          <li>Poetry を完全に不要にするか、配布用途だけ残すかを明記する。</li>
+        </ul>
+      </section>
+      <section id="review-checklist" data-toc data-toc-title="レビュー観点">
+        <h2>レビュー観点</h2>
+        <ul>
+          <li><code>pyproject.toml</code> の依存定義が意図せず変わっていないか。</li>
+          <li><code>uv.lock</code> の差分が移行目的に対して妥当か。</li>
+          <li>Python バージョンがローカル環境で想定通りになっているか。</li>
+          <li>proxy / SSL / 社内パッケージリポジトリの設定に認証情報が混入していないか。</li>
+          <li>README の手順だけで新規開発者が環境構築できるか。</li>
+          <li>移行 PR に機能追加や依存の大幅更新が混ざっていないか。</li>
+        </ul>
+      </section>
+      <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation"></nav>

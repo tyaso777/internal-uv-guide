@@ -1,0 +1,86 @@
+{
+  "title": "社内 uv 利用ガイド",
+  "description": "社内 Python 開発環境を uv ベースで導入・移行・運用するためのガイドです。",
+  "lang": "ja",
+  "shell": "../layouts/chapter-shell.html",
+  "outputDir": "..",
+  "layout": {
+    "defaultMode": "standard"
+  },
+  "headingNumbering": {
+    "enabled": true,
+    "body": true,
+    "toc": true,
+    "format": "{number}. {title}",
+    "referenceFormat": "{number}",
+    "tocTitleMode": "numbered"
+  },
+  "chapters": [
+    {
+      "title": "社内で uv を使うための導入・移行・運用ガイド",
+      "sidebarTitle": "概要",
+      "subtitle": "Poetry + pyenv から uv へ移行するための標準手順",
+      "description": "社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。",
+      "source": "index.html",
+      "href": "index.html"
+    },
+    {
+      "title": "uv のインストール",
+      "sidebarTitle": "インストール",
+      "subtitle": "Poetry + pyenv から uv へ移行するための標準手順",
+      "description": "社内標準の uv バージョンを Windows 端末へ導入し、uv コマンドを利用できる状態にします。",
+      "source": "install.html",
+      "href": "install.html"
+    },
+    {
+      "title": "uv のネットワーク設定の基本",
+      "sidebarTitle": "ネットワーク設定の基本",
+      "subtitle": "Poetry + pyenv から uv へ移行するための標準手順",
+      "description": "社内 proxy、証明書、社内パッケージリポジトリなど、uv のネットワーク設定の考え方を整理します。",
+      "source": "setup.html",
+      "href": "setup.html"
+    },
+    {
+      "title": "uv の基本操作と概念",
+      "sidebarTitle": "基本操作と概念",
+      "subtitle": "Poetry + pyenv から uv へ移行するための標準手順",
+      "description": "uv を使ううえで必要になる主要概念、基本コマンド、依存関係の記法を整理します。",
+      "source": "usage.html",
+      "href": "usage.html"
+    },
+    {
+      "title": "新規 uv プロジェクトの始め方",
+      "sidebarTitle": "新規 uv プロジェクトの始め方",
+      "subtitle": "Poetry + pyenv から uv へ移行するための標準手順",
+      "description": "uv を使って新規 Python プロジェクトを作成し、初回実行できる状態にする流れを示します。",
+      "source": "start-project.html",
+      "href": "start-project.html"
+    },
+    {
+      "title": "clone・コピーした uv プロジェクトの始め方",
+      "sidebarTitle": "clone・コピーした uv プロジェクトの始め方",
+      "subtitle": "Poetry + pyenv から uv へ移行するための標準手順",
+      "description": "uv 対応済みの既存プロジェクトを取得し、lock file を尊重して手元で動かす流れを示します。",
+      "source": "copy-existing-project.html",
+      "href": "copy-existing-project.html"
+    },
+    {
+      "title": "Poetry + pyenv から uv へ移行する",
+      "sidebarTitle": "Poetry + pyenv からの移行",
+      "subtitle": "Poetry + pyenv から uv へ移行するための標準手順",
+      "description": "Poetry + pyenv 構成の既存プロジェクトを uv ベースの運用へ移行する手順を整理します。",
+      "source": "migration.html",
+      "href": "migration.html"
+    },
+    {
+      "title": "uv 利用時のセキュリティ運用",
+      "sidebarTitle": "セキュリティ運用",
+      "subtitle": "Poetry + pyenv から uv へ移行するための標準手順",
+      "description": "uv 利用時に必要な脆弱性監査、ライセンス確認、依存追加時のレビュー観点を整理します。",
+      "source": "security.html",
+      "href": "security.html"
+    }
+  ],
+  "materials": [],
+  "externalLinks": []
+}

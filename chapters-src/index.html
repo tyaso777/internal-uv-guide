@@ -1,0 +1,40 @@
+<header class="hero">
+        <h1>社内で uv を使うための導入・移行・運用ガイド</h1>
+        <p>社内の Python 開発環境を uv ベースで導入・移行・運用するための全体像を示します。</p>
+      </header>
+
+      <section id="purpose" data-toc data-toc-title="目的">
+        <h2>目的</h2>
+        <p>このガイドは、社内の Python 開発環境を uv ベースで導入・移行・運用するための標準手順をまとめたものです。Windows 端末、社内 proxy、社内 CA、社内パッケージリポジトリを利用する環境を主な対象にしています。</p>
+        <p>開発者が同じ手順で Python、仮想環境、依存関係、lock file、監査コマンドを扱えるようにし、ローカル環境の差分を小さくすることを目的とします。</p>
+      </section>
+      <section id="target-readers" data-toc data-toc-title="対象読者">
+        <h2>対象読者</h2>
+        <ul>
+          <li>Python プロジェクトを新規に作成する開発者</li>
+          <li><code>pyenv + Poetry</code> 構成の既存プロジェクトを uv へ移行する担当者</li>
+          <li>社内 proxy、証明書、社内パッケージリポジトリを整備する担当者</li>
+          <li>依存パッケージの脆弱性監査やライセンス確認を運用する担当者</li>
+        </ul>
+      </section>
+      <section id="guide-map" data-toc data-toc-title="ガイド構成">
+        <h2>ガイド構成</h2>
+        <div class="table-wrap"><table><thead><tr><th>ページ</th><th>主な内容</th><th>読むタイミング</th></tr></thead><tbody><tr><td><a href="install.html">インストール</a></td><td>proxy 配下での導入、uv バージョン固定、導入確認</td><td>初回導入時</td></tr>
+<tr><td><a href="setup.html">ネットワーク設定の基本</a></td><td><code>HTTP_PROXY</code>、<code>HTTPS_PROXY</code>、<code>UV_SYSTEM_CERTS</code>、社内パッケージリポジトリ、依存解決の考え方</td><td>初回導入時、SSL エラー対応時</td></tr>
+<tr><td><a href="usage.html">基本操作と概念</a></td><td>プロジェクト、仮想環境、lock、sync、tool、pip 互換</td><td>日常開発</td></tr>
+<tr><td><a href="start-project.html">新規 uv プロジェクトの始め方</a></td><td>新規プロジェクト作成、Python バージョン固定、初回依存追加、初回実行</td><td>新規開発開始時</td></tr>
+<tr><td><a href="copy-existing-project.html">clone・コピーした uv プロジェクトの始め方</a></td><td>clone / コピー後の同期、既存 lock file の利用、動作確認</td><td>既存 uv プロジェクト利用時</td></tr>
+<tr><td><a href="migration.html">Poetry + pyenv からの移行</a></td><td>対応表、移行手順、互換でない点</td><td>既存プロジェクト移行時</td></tr>
+<tr><td><a href="security.html">セキュリティ運用</a></td><td><code>pip-audit</code>、<code>pip-licenses</code>、依存追加時チェック</td><td>標準化、監査、リリース前</td></tr></tbody></table></div>
+      </section>
+      <section id="operational-assumptions" data-toc data-toc-title="運用上の前提">
+        <h2>運用上の前提</h2>
+        <ul>
+          <li>uv 本体は、社内で確認済みの標準バージョンを利用します。</li>
+          <li>プロジェクトの Python バージョンは <code>.python-version</code> と <code>pyproject.toml</code> で明示します。</li>
+          <li>社内 proxy と証明書設定は、ユーザー環境変数で管理します。</li>
+          <li>依存パッケージの解決では、必要に応じて <code>--exclude-newer "X days"</code> を使い、公開直後のパッケージを避けます。</li>
+          <li>脆弱性監査とライセンス監査は、ローカルで実行できる形にします。</li>
+        </ul>
+      </section>
+      <nav class="chapter-nav" data-chapter-nav aria-label="Chapter navigation"></nav>

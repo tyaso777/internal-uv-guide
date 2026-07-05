@@ -19,8 +19,9 @@ This document uses assets from [tyaso777/html-doc-template](https://github.com/t
 
 ## Generate
 
-このリポジトリでは、公開用 HTML と生成スクリプトを同じ Git 管理対象にしています。
+このリポジトリでは、`chapters-src/` を編集用の正本とし、テンプレート標準の build script で公開用 HTML を生成します。
 
 ```powershell
-python work\generate_uv_guide.py
+python scripts\build_site.py
+python scripts\check_html.py index.html install.html setup.html usage.html start-project.html copy-existing-project.html migration.html security.html chapters-src
 ```
